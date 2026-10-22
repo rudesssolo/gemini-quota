@@ -107,23 +107,38 @@ This is the normal case: Google refuses OAuth inside any embedded WebView with *
 may not be secure"*, and no user-agent trick changes that. The login screen detects the block and
 shows one card with a single action: **Import copied cookies**.
 
-Copy the cookies in a browser where you are already signed in, send that text to the phone (Keep,
-email, chat) and copy it there. Then open the app and tap **Import copied cookies** — the app reads
-the clipboard for you, shows a green status when a Google session was found, and connects.
+Copy the cookies in any browser where you are already signed in, then open **Gemini Quota**: the login
+screen reads the clipboard for you, turns the status green when it finds a Google session, and one tap on
+**Connect** finishes the job.
 
-How to get the text, easiest first:
+### On the phone, with no computer
 
-1. **Desktop, 4 steps:** open `gemini.google.com` → **F12 → Network** → reload → click the first
-   `gemini.google.com` request → right-click the `cookie` request header → **Copy value**.
-2. **Desktop, one click:** same request → right-click → **Copy → Copy as cURL** (only the `cookie:`
-   part is used).
-3. **Android, no computer:** install a Chromium fork with extension support (Kiwi, Mises, Lemur)
-   plus **Cookie-Editor**, then *Export → Copy*. Chrome and Firefox for Android cannot export
-   HttpOnly cookies.
+This is the whole point of the import path — it needs no second device.
 
-A plain `document.cookie` copy does not work: the session cookies (`SID`, `__Secure-1PSID`,
-`SAPISID`) are HttpOnly, so the request would be unauthenticated. The dialog flags that in red
-before you can submit.
+1. Install **Firefox for Android** and open `gemini.google.com`, signed in to the account that holds your
+   Gemini plan. (Any real browser can sign in; only embedded WebViews are blocked.)
+2. In Firefox: **menu (three dots) → Extensions → Explore more add-ons → Cookie-Editor → Add**.
+   Cookie-Editor publishes an official touch-optimised build for Firefox for Android.
+3. Still on the `gemini.google.com` tab, open **Cookie-Editor**, tap **Export**, then **Copy**. Both the
+   JSON export and the *Header String* export are accepted.
+4. Switch back to **Gemini Quota** → **Import copied cookies** → **Connect**.
+
+Any Android browser that loads Chrome extensions works the same way (**Mises**, **Quetta**, **Edge
+Canary**). Chrome for Android itself cannot export, and `chrome://net-export` is no help: Chromium
+replaces `Cookie` header values with `[N bytes were stripped]` in the log.
+
+### If you do have a computer
+
+1. Open `gemini.google.com` → **F12 → Network** → reload → click the first `gemini.google.com` request →
+   right-click the `cookie` request header → **Copy value**.
+2. Send that text to the phone (Keep, email, chat) and copy it there.
+3. Open the app and tap **Import copied cookies**.
+
+### Why a `document.cookie` copy does not work
+
+The session cookies (`SID`, `__Secure-1PSID`, `SAPISID`) are HttpOnly, so a JavaScript copy would be
+unauthenticated — Cookie-Editor reads them through the browser's cookie API instead. The dialog flags a
+cookie-less copy in red before you can submit.
 
 ## Security and privacy
 

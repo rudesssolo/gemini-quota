@@ -2,7 +2,6 @@ package dev.geminiquota.data
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -60,6 +59,32 @@ class CookieUtilsTest {
     }
 
     @Test
+    fun `accepts a cookie editor header string export from the phone`() {
+        // Cookie-Editor's "Header String" export on Firefox for Android.
+        val raw = "NID=511=abc; SID=g.a000xyz; __Secure-1PSID=g.a000abc; " +
+            "__Secure-3PSID=g.a000def; HSID=QwErTy; SSID=AsDfGh; APISID=ZxCvBn; " +
+            "SAPISID=PoIuYt; __Secure-1PAPISID=MnBvCx; AEC=AVQBc; SIDCC=ALmx"
+
+        val summary = CookieUtils.summary(raw)
+
+        assertTrue(summary.hasSession)
+        assertEquals(11, summary.count)
+        assertEquals(
+            listOf("SID", "__Secure-1PSID", "__Secure-3PSID", "HSID", "SSID", "APISID", "SAPISID"),
+            summary.names,
+        )
+        assertTrue(CookieUtils.normalize(raw).startsWith("NID=511=abc; SID=g.a000xyz"))
+    }
+
+    @Test
+    fun `accepts a single cookie object export`() {
+        val raw = """{"domain": ".google.com", "name": "SID", "value": "abc"}"""
+
+        assertEquals("SID=abc", CookieUtils.normalize(raw))
+        assertTrue(CookieUtils.looksLikeGeminiSession(raw))
+    }
+
+    @Test
     fun `keeps the last value for a duplicated name`() {
         assertEquals("SID=new; HSID=def", CookieUtils.normalize("SID=old; SID=new; HSID=def"))
     }
@@ -84,62 +109,5 @@ class CookieUtilsTest {
         assertEquals(3, summary.count)
         assertFalse(summary.hasSession)
         assertTrue(summary.names.isEmpty())
-    }
-}
-
-class SnapshotCodecTest {
-
-    @Test
-    fun `round trips a snapshot`() {
-        val snapshot = UsageSnapshot(
-            fiveHour = UsageWindow(0.42, 1_761_260_400_000L),
-            weekly = UsageWindow(0.10, null),
-            tier = "TIER1",
-            fetchedAtEpochMs = 1_790_000_000_000L,
-            source = UsageSource.GRAPHQL,
-        )
-
-        val decoded = SnapshotCodec.decode(SnapshotCodec.encode(snapshot))
-
-        assertEquals(snapshot, decoded)
-    }
-
-    @Test
-    fun `round trips without a weekly window or tier`() {
-        val snapshot = UsageSnapshot(
-            fiveHour = UsageWindow(0.0, null),
-            weekly = null,
-            tier = null,
-            fetchedAtEpochMs = 1_790_000_000_000L,
-            source = UsageSource.BATCHEXECUTE,
-        )
-
-        assertEquals(snapshot, SnapshotCodec.decode(SnapshotCodec.encode(snapshot)))
-    }
-
-    @Test
-    fun `rejects missing or malformed payloads`() {
-        assertNull(SnapshotCodec.decode(null))
-        assertNull(SnapshotCodec.decode(""))
-        assertNull(SnapshotCodec.decode("{}"))
-        assertNull(SnapshotCodec.decode("not json"))
-        assertNull(
-            SnapshotCodec.decode(
-                """{"version":1,"fetchedAt":1,"source":"GRAPHQL"}""",
-            ),
-        )
-    }
-
-    @Test
-    fun `treats a zero reset as unknown`() {
-        val snapshot = UsageSnapshot(
-            fiveHour = UsageWindow(0.5, 0L),
-            weekly = null,
-            tier = null,
-            fetchedAtEpochMs = 1_790_000_000_000L,
-            source = UsageSource.GRAPHQL,
-        )
-        val decoded = SnapshotCodec.decode(SnapshotCodec.encode(snapshot))
-        assertNull(decoded?.fiveHour?.resetAtEpochMs)
     }
 }

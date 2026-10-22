@@ -65,7 +65,7 @@
     <string name="paste_cookies_status_no_session">%1$d cookies found, but no Google session cookie. A “document.cookie” copy is missing the HttpOnly cookies (SID, __Secure-1PSID) — export from DevTools or Cookie-Editor instead.</string>
     <string name="paste_cookies_help_button">How do I get this?</string>
     <string name="paste_cookies_help_title">Getting your session cookies</string>
-    <string name="paste_cookies_help_body">Google blocks sign-in inside apps, so the app needs the cookies from a browser where you are already signed in.\n\nOn a computer (easiest)\n1. Open gemini.google.com and press F12, then the Network tab.\n2. Reload the page and click the first gemini.google.com request.\n3. Right-click the “cookie” request header and choose Copy value.\n4. Send that text to this phone (Keep, email, chat) and copy it there.\n\nOn the phone\nUse a browser that supports extensions (Kiwi, Mises, Lemur) plus Cookie-Editor: Export, then Copy.\n\nThen open this app and tap “Import copied cookies”. Nothing is uploaded; the cookies are stored encrypted on this device only.</string>
+    <string name="paste_cookies_help_body">Google blocks sign-in inside apps, so the app needs the cookies from a browser where you are already signed in.\n\nOn this phone — no computer needed\n1. Install Firefox for Android, open gemini.google.com and sign in to your Google account.\n2. In Firefox open the menu (three dots) → Extensions → Explore more add-ons → Cookie-Editor → Add.\n3. Still on the gemini.google.com tab, open Cookie-Editor, tap Export, then Copy.\n4. Return here, tap Import copied cookies, then Connect.\n\nOn a computer, if you ever have one\n1. Open gemini.google.com, press F12 and open the Network tab.\n2. Reload the page and click the first gemini.google.com request.\n3. Right-click the cookie request header → Copy value, send that text to this phone and copy it.\n\nOther Android browsers that load extensions (Mises, Quetta, Edge Canary) work the same way. Nothing is uploaded and the cookies stay encrypted on this device.</string>
     <string name="login_blocked_detected">Google blocked sign-in inside the app — that is normal and not a bug. Copy your cookies from a browser, then tap Import.</string>
     <string name="connect_failed">That session could not be verified. Make sure the cookies are current and complete.</string>
     <string name="connect_invalid">That does not look like a Gemini cookie header.</string>
@@ -91,8 +91,8 @@
     <string name="error_not_signed_in">Not signed in.</string>
 
     <string name="import_card_title">Can\'t sign in here?</string>
-    <string name="import_card_body">Copy your Gemini cookies in a browser, then tap Import — the app reads the clipboard for you.</string>
-    <string name="import_card_body_blocked">Google blocked sign-in inside the app — this is normal. Copy your cookies from a browser, then tap Import.</string>
+    <string name="import_card_body">Copy your Gemini cookies in Firefox with the Cookie-Editor add-on, then tap Import — the app reads the clipboard for you.</string>
+    <string name="import_card_body_blocked">Google blocked sign-in inside the app — this is normal. Copy your cookies from Firefox (Cookie-Editor), then tap Import.</string>
     <string name="import_button">Import copied cookies</string>
     <string name="import_help_button">How?</string>
     <string name="paste_clipboard_button">Paste from clipboard</string>
