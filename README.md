@@ -102,13 +102,27 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ### If Google blocks the embedded sign-in
 
-Google sometimes shows *"This browser or app may not be secure"* inside WebViews. Use the fallback:
+This is the common case: Google refuses OAuth inside any embedded WebView with *"This browser or
+app may not be secure"*, and no user-agent trick changes that. The app detects that page and points
+you at the import fallback (**Paste session cookies instead**, also in the overflow menu and in the
+paste dialog's **How do I get this?** help).
 
-- Sign in to `gemini.google.com` in a browser (Firefox for Android supports extensions such as
-  Cookie-Editor; desktop Chrome + DevTools also works).
-- Copy the **Cookie** request header for `gemini.google.com`.
-- In the app choose **Paste session cookies instead** and paste it. The session is validated before
-  being saved.
+The import accepts any of these, and validates the session against Gemini before saving it:
+
+| Input | How to get it |
+| --- | --- |
+| `Cookie:` request header | DevTools → Network → first `gemini.google.com` request → right-click the `Cookie` header → *Copy value* |
+| `Copy as cURL` | Same request → right-click → *Copy* → *Copy as cURL* (only the `cookie:` part is used) |
+| JSON cookie export | Cookie-Editor → *Export* → *Copy* (cookies from other sites are ignored) |
+
+You need the **HttpOnly** session cookies — `SID`, `__Secure-1PSID`, `SAPISID` and friends. A copy of
+`document.cookie` never contains them, so the request would be unauthenticated; the dialog says so
+before you submit.
+
+Cookies have to come from a real browser that can export HttpOnly cookies. A desktop browser is the
+most reliable route (copy the header, send it to the phone, paste). On Android you need a browser with
+Chrome-extension support (Kiwi, Mises, Lemur) plus Cookie-Editor, because Chrome and Firefox for
+Android cannot export HttpOnly cookies.
 
 ## Security and privacy
 

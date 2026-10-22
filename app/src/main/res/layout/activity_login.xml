@@ -33,8 +33,19 @@
         android:id="@+id/status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
         android:text="@string/login_blocked"
         android:textColor="@color/text_secondary"
         android:textSize="11sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/paste_instead"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="8dp"
+        android:text="@string/connect_paste_button" />
 </LinearLayout>

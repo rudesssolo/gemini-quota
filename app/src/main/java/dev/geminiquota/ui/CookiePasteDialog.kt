@@ -2,6 +2,8 @@ package dev.geminiquota.ui
 
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.geminiquota.GeminiQuotaApp
@@ -13,7 +15,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Fallback for accounts that Google refuses to sign in inside a WebView.
- * Users can paste the Cookie request header exported from their browser.
+ * Accepts the Cookie request header, a "Copy as cURL" command, or a JSON export.
  */
 object CookiePasteDialog {
 
@@ -26,11 +28,15 @@ object CookiePasteDialog {
             .setNegativeButton(R.string.cancel, null)
             .create()
 
+        binding.cookieInput.doAfterTextChanged { render(activity, binding) }
+        binding.helpButton.setOnClickListener { showHelp(activity) }
+        render(activity, binding)
+
         dialog.setOnShowListener {
             val positive = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
             positive.setOnClickListener {
                 val raw = binding.cookieInput.text?.toString().orEmpty()
-                if (!CookieUtils.looksLikeGeminiSession(raw)) {
+                if (!CookieUtils.summary(raw).hasSession) {
                     binding.cookieLayout.error = activity.getString(R.string.connect_invalid)
                     return@setOnClickListener
                 }
@@ -57,4 +63,43 @@ object CookiePasteDialog {
         }
         dialog.show()
     }
+
+    /** Live feedback so a partial export is obvious before the request is sent. */
+    private fun render(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
+        val summary = CookieUtils.summary(binding.cookieInput.text?.toString())
+        when {
+            summary.isEmpty -> {
+                binding.cookieStatus.setText(R.string.paste_cookies_status_empty)
+                binding.cookieStatus.setTextColor(color(activity, R.color.text_secondary))
+            }
+
+            summary.hasSession -> {
+                binding.cookieStatus.text = activity.getString(
+                    R.string.paste_cookies_status_ready,
+                    summary.count,
+                    summary.names.joinToString(", "),
+                )
+                binding.cookieStatus.setTextColor(color(activity, R.color.severity_ok))
+            }
+
+            else -> {
+                binding.cookieStatus.text = activity.getString(
+                    R.string.paste_cookies_status_no_session,
+                    summary.count,
+                )
+                binding.cookieStatus.setTextColor(color(activity, R.color.severity_danger))
+            }
+        }
+    }
+
+    private fun showHelp(activity: AppCompatActivity) {
+        MaterialAlertDialogBuilder(activity)
+            .setTitle(R.string.paste_cookies_help_title)
+            .setMessage(R.string.paste_cookies_help_body)
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
+    private fun color(activity: AppCompatActivity, resId: Int): Int =
+        ContextCompat.getColor(activity, resId)
 }

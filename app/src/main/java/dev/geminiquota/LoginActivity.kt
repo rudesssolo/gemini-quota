@@ -42,6 +42,7 @@ class LoginActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.status.text = getString(R.string.login_blocked)
+        binding.pasteInstead.setOnClickListener { openPasteDialog() }
 
         onBackPressedDispatcher.addCallback(this) {
             if (binding.webView.canGoBack()) {
@@ -63,14 +64,18 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_paste_cookies -> {
-            CookiePasteDialog.show(this) {
-                setResult(RESULT_OK)
-                finish()
-            }
+            openPasteDialog()
             true
         }
 
         else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun openPasteDialog() {
+        CookiePasteDialog.show(this) {
+            setResult(RESULT_OK)
+            finish()
+        }
     }
 
     // Gemini's sign-in page requires JavaScript; there is deliberately no JS bridge.
@@ -104,7 +109,14 @@ class LoginActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 binding.progress.isVisible = false
+                if (url?.contains("signin/rejected", ignoreCase = true) == true) {
+                    showBlocked()
+                    return
+                }
                 maybeConnect()
+                if (url?.startsWith("https://accounts.google.com") == true) {
+                    detectRejection(view)
+                }
             }
 
             override fun onReceivedError(
@@ -146,6 +158,20 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Google answers with a "browser or app may not be secure" page in WebViews.
+     * Detect it so the cookie-import path is suggested right where it is needed.
+     */
+    private fun detectRejection(view: WebView?) {
+        view?.evaluateJavascript(REJECTION_PROBE) { result ->
+            if (result == "true") showBlocked()
+        }
+    }
+
+    private fun showBlocked() {
+        binding.status.text = getString(R.string.login_blocked_detected)
+    }
+
     override fun onDestroy() {
         binding.webView.stopLoading()
         binding.webView.destroy()
@@ -154,5 +180,12 @@ class LoginActivity : AppCompatActivity() {
 
     private companion object {
         const val USAGE_URL = "https://gemini.google.com/usage"
+
+        /** Looks for Google's WebView rejection page without reading any cookie data. */
+        const val REJECTION_PROBE = "(function(){" +
+            "var t=(document.body?document.body.innerText:'').toLowerCase();" +
+            "return t.indexOf('may not be secure')>=0" +
+            "||(t.indexOf('couldn')>=0&&t.indexOf('sign you in')>=0);" +
+            "})()"
     }
 }

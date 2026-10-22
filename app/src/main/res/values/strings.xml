@@ -58,8 +58,15 @@
     <string name="login_failed">Sign-in didn\'t complete. Try again, or paste cookies manually.</string>
     <string name="login_blocked">Google may block sign-in inside embedded browsers. If you see “browser or app may not be secure”, use “Paste cookies” instead.</string>
     <string name="paste_cookies_title">Paste session cookies</string>
-    <string name="paste_cookies_body">Paste the Cookie request header from a browser signed in to gemini.google.com. It must include cookies such as __Secure-1PSID and SAPISID.</string>
+    <string name="paste_cookies_body">Paste the Cookie request header (or a JSON cookie export) from a browser signed in to gemini.google.com. It must include HttpOnly session cookies such as __Secure-1PSID and SAPISID.</string>
     <string name="paste_cookies_hint">SID=…; HSID=…; __Secure-1PSID=…</string>
+    <string name="paste_cookies_status_empty">Supported: a Cookie header, “Copy as cURL”, or a JSON cookie export.</string>
+    <string name="paste_cookies_status_ready">%1$d cookies found · session cookies: %2$s</string>
+    <string name="paste_cookies_status_no_session">%1$d cookies found, but no Google session cookie. A “document.cookie” copy is missing the HttpOnly cookies (SID, __Secure-1PSID) — export from DevTools or Cookie-Editor instead.</string>
+    <string name="paste_cookies_help_button">How do I get this?</string>
+    <string name="paste_cookies_help_title">Getting your session cookies</string>
+    <string name="paste_cookies_help_body">Google blocks sign-in inside apps, so the session has to be exported from a real browser.\n\nFrom a computer (most reliable)\n1. Sign in at gemini.google.com in Chrome or Firefox.\n2. Open DevTools (F12) and switch to the Network tab, then reload the page.\n3. Select the first request to gemini.google.com.\n4. Under Request Headers, right-click the Cookie header and choose Copy value.\n   Or right-click the request → Copy → Copy as cURL.\n5. Send that text to this phone (email, notes, Keep…) and paste it above.\n\nOn the phone (harder)\nAndroid browsers do not expose HttpOnly cookies, so you need a browser that supports Chrome extensions — for example Kiwi, Mises or Lemur — signed in at gemini.google.com, with the “Cookie-Editor” extension open on that tab. Use Export → Copy, then paste the JSON above.\n\nWhy document.cookie does not work\nRunning “document.cookie” in the page console never returns the HttpOnly cookies (SID, __Secure-1PSID, SAPISID), so the request is not authenticated.\n\nAnything you paste is encrypted with a key in the Android Keystore and only ever sent to gemini.google.com.</string>
+    <string name="login_blocked_detected">Google refused sign-in inside the app — this is expected for embedded browsers. Tap “Paste session cookies instead” below and follow the steps.</string>
     <string name="connect_failed">That session could not be verified. Make sure the cookies are current and complete.</string>
     <string name="connect_invalid">That does not look like a Gemini cookie header.</string>
     <string name="connect_success">Connected</string>

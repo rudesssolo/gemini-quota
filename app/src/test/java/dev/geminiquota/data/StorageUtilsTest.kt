@@ -35,6 +35,56 @@ class CookieUtilsTest {
         assertEquals("", CookieUtils.normalize("   "))
         assertEquals("", CookieUtils.normalize(null))
     }
+
+    @Test
+    fun `accepts a copy as curl command`() {
+        val raw = "curl 'https://gemini.google.com/usage' \\\n" +
+            "  -H 'cookie: SID=abc; HSID=def; SAPISID=ghi' \\\n" +
+            "  -H 'x-goog-authuser: 0' --compressed"
+        assertEquals("SID=abc; HSID=def; SAPISID=ghi", CookieUtils.normalize(raw))
+        assertTrue(CookieUtils.looksLikeGeminiSession(raw))
+    }
+
+    @Test
+    fun `accepts a cookie editor json export and skips other sites`() {
+        val raw = """
+            [
+              {"domain": ".google.com", "name": "SID", "value": "abc", "path": "/", "secure": true},
+              {"domain": ".google.com", "name": "__Secure-1PSID", "value": "def"},
+              {"domain": ".example.com", "name": "tracker", "value": "zzz"}
+            ]
+        """.trimIndent()
+
+        assertEquals("SID=abc; __Secure-1PSID=def", CookieUtils.normalize(raw))
+        assertTrue(CookieUtils.summary(raw).hasSession)
+    }
+
+    @Test
+    fun `keeps the last value for a duplicated name`() {
+        assertEquals("SID=new; HSID=def", CookieUtils.normalize("SID=old; SID=new; HSID=def"))
+    }
+
+    @Test
+    fun `summary reports parsed cookies and the session state`() {
+        val summary = CookieUtils.summary("SID=a; HSID=b; NID=c")
+        assertEquals(3, summary.count)
+        assertTrue(summary.hasSession)
+        assertEquals(listOf("SID", "HSID"), summary.names)
+        assertFalse(summary.isEmpty)
+
+        val empty = CookieUtils.summary("   ")
+        assertTrue(empty.isEmpty)
+        assertEquals(0, empty.count)
+        assertFalse(empty.hasSession)
+    }
+
+    @Test
+    fun `flags a document cookie copy that lacks session cookies`() {
+        val summary = CookieUtils.summary("NID=abc; SIDCC=def; AEC=ghi")
+        assertEquals(3, summary.count)
+        assertFalse(summary.hasSession)
+        assertTrue(summary.names.isEmpty())
+    }
 }
 
 class SnapshotCodecTest {
