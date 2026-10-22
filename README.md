@@ -2,7 +2,7 @@
 
 An Android home-screen widget that shows your **Gemini subscription usage limits** — the same
 compute-based 5-hour and weekly windows that [gemini.google.com/usage](https://gemini.google.com/usage)
-shows — with a live reset countdown.
+shows — with the exact date and time each window resets.
 
 > Unofficial, personal-use project. Not affiliated with Google. Google does not publish an API for
 > consumer Gemini subscription usage, so the app reads the same internal endpoints the usage page uses.
@@ -11,12 +11,13 @@ shows — with a live reset countdown.
 
 | Widget state | Content |
 |---|---|
-| Signed in | 5-hour window and weekly window: % used, progress bar, ticking "Resets in …" countdown, plan chip, last-updated stamp |
+| Signed in | 5-hour window and weekly window: % used, progress bar, an absolute "Resets Sun 25 Oct · 14:30" line, plan chip, last-updated stamp |
 | Not signed in | "Connect Gemini — tap to sign in" |
 | Session expired | "Session expired — tap to sign in" |
 | Network/protocol error | Cached numbers stay visible with an "offline" footer, or a retry prompt |
 
-- 4×3 widget (resizable down to 4×2), light/dark aware.
+- 4×3 widget, resizable horizontally and vertically, with a 190 dp minimum height so neither reset line
+  can be clipped by the bottom edge. Light/dark aware.
 - Tap the body to open the dashboard; tap the refresh icon to fetch immediately.
 - Limits are **compute-based**, so the widget reports percentages and reset times — not a fake
   "prompts remaining" count.
@@ -50,8 +51,10 @@ battery-friendly model:
 - **Immediate refresh** on widget refresh tap, app open (when older than 5 minutes) and after sign-in.
 - **Reset-time refresh**: a one-shot job scheduled for `next reset + 60 s`, so the widget updates right
   when a window rolls over.
-- **Native ticking countdowns**: `Chronometer` inside `RemoteViews` ticks every second without waking
-  the app. A "Updated 3 min ago" footer makes staleness explicit.
+- **Absolute reset times, not countdowns**: a `Chronometer` only ticks while its `RemoteViews` is live,
+  shows `00:00` if it is never started, and cannot be measured into a fixed-height widget. A wall-clock
+  line (`Resets Sun 25 Oct · 14:30`, 24- or 12-hour from the system setting) stays correct after the
+  screen was off for hours and costs no ticks. A "Updated 3 min ago" footer makes staleness explicit.
 
 No foreground service, no wake locks, no notification permission, no exact-alarm permission.
 
@@ -159,8 +162,8 @@ cookie-less copy in red before you can submit.
   exists for that case.
 - **No official API.** Account/session handling is inherently more fragile than OAuth.
 - **Compute-based limits.** The app deliberately does not display "prompts left".
-- **15-minute background floor.** Between refreshes the numbers are last-known; the footer and the
-  live countdown show how fresh they are.
+- **15-minute background floor.** Between refreshes the numbers are last-known; the footer timestamp
+  shows how fresh they are.
 - **One account at a time.**
 - **Consumer plans.** Workspace / Code Assist Standard or Enterprise quotas use different systems.
 - Use at your own risk and in line with Google's Terms of Service. Do not publish this app to Google
@@ -193,7 +196,7 @@ app/src/main/java/dev/geminiquota/
 │   ├── QuotaWidgetProvider.kt     AppWidgetProvider
 │   └── QuotaWidgetRenderer.kt     RemoteViews renderer
 └── ui/
-    ├── UsageFormat.kt             Percent, severity, countdown helpers
+    ├── UsageFormat.kt             Percent, severity and reset-time helpers
     ├── MainRenderer.kt            Dashboard rendering
     └── CookiePasteDialog.kt       Cookie import fallback
 ```

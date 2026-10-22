@@ -78,35 +78,15 @@ class MainRenderer(
             )
             card.cardProgress.progress = window.usedPercent
             card.cardProgress.visibility = View.VISIBLE
-
-            val base = UsageFormat.countdownBase(window)
-            if (base != null) {
-                card.cardChrono.isVisible = true
-                card.cardChrono.format = activity.getString(R.string.resets_in)
-                card.cardChrono.isCountDown = true
-                card.cardChrono.base = base
-                card.cardChrono.start()
-                card.cardUnknown.isVisible = false
-            } else {
-                card.cardChrono.stop()
-                card.cardChrono.isVisible = false
-                card.cardUnknown.setText(
-                    if (window.resetAtEpochMs == null) {
-                        R.string.reset_unknown
-                    } else {
-                        R.string.reset_soon
-                    },
-                )
-                card.cardUnknown.isVisible = true
-            }
         } else {
             card.cardPercent.setTextColor(activity.getColor(R.color.text_secondary))
             card.cardProgress.progress = 0
-            card.cardChrono.stop()
-            card.cardChrono.isVisible = false
-            card.cardUnknown.setText(R.string.window_not_reported)
-            card.cardUnknown.isVisible = true
+            card.cardProgress.visibility = View.VISIBLE
         }
+
+        // Absolute time, matching the widget: a countdown stops being true the
+        // moment the process is frozen.
+        card.cardReset.text = UsageFormat.resetLabel(activity, window)
     }
 
     private fun messageFor(kind: ErrorKind): Int = when (kind) {

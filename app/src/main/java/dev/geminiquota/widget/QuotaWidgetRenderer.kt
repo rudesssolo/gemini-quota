@@ -92,16 +92,14 @@ object QuotaWidgetRenderer {
             context, views,
             percentId = R.id.percent_five,
             progressId = R.id.progress_five,
-            chronometerId = R.id.reset_five,
-            unknownId = R.id.reset_five_unknown,
+            resetId = R.id.reset_five,
             window = snapshot?.fiveHour,
         )
         bindWindow(
             context, views,
             percentId = R.id.percent_weekly,
             progressId = R.id.progress_weekly,
-            chronometerId = R.id.reset_weekly,
-            unknownId = R.id.reset_weekly_unknown,
+            resetId = R.id.reset_weekly,
             window = snapshot?.weekly,
         )
 
@@ -118,17 +116,14 @@ object QuotaWidgetRenderer {
         views: RemoteViews,
         percentId: Int,
         progressId: Int,
-        chronometerId: Int,
-        unknownId: Int,
+        resetId: Int,
         window: UsageWindow?,
     ) {
         if (window == null) {
             views.setTextViewText(percentId, "—")
             views.setTextColor(percentId, context.getColor(R.color.text_secondary))
             views.setProgressBar(progressId, 100, 0, false)
-            views.setViewVisibility(chronometerId, View.GONE)
-            views.setTextViewText(unknownId, context.getString(R.string.window_not_reported))
-            views.setViewVisibility(unknownId, View.VISIBLE)
+            views.setTextViewText(resetId, context.getString(R.string.window_not_reported))
             return
         }
 
@@ -138,28 +133,7 @@ object QuotaWidgetRenderer {
             context.getColor(UsageFormat.severityColorRes(UsageFormat.severity(window))),
         )
         views.setProgressBar(progressId, 100, window.usedPercent, false)
-
-        val base = UsageFormat.countdownBase(window)
-        if (base != null) {
-            views.setChronometer(
-                chronometerId,
-                base,
-                context.getString(R.string.resets_in),
-                true,
-            )
-            views.setChronometerCountDown(chronometerId, true)
-            views.setViewVisibility(chronometerId, View.VISIBLE)
-            views.setViewVisibility(unknownId, View.GONE)
-        } else {
-            views.setViewVisibility(chronometerId, View.GONE)
-            val message = if (window.resetAtEpochMs == null) {
-                R.string.reset_unknown
-            } else {
-                R.string.reset_soon
-            }
-            views.setTextViewText(unknownId, context.getString(message))
-            views.setViewVisibility(unknownId, View.VISIBLE)
-        }
+        views.setTextViewText(resetId, UsageFormat.resetLabel(context, window))
     }
 
     private fun bindEmptyState(context: Context, views: RemoteViews, state: UsageUiState) {

@@ -10,7 +10,7 @@
     <string name="window_weekly">Weekly window</string>
     <string name="percent_format">%1$d%%</string>
     <string name="percent_used_label">used</string>
-    <string name="resets_in">Resets in %s</string>
+    <string name="resets_at">Resets %1$s</string>
     <string name="reset_unknown">Reset time unavailable</string>
     <string name="window_not_reported">Not reported</string>
     <string name="updated_relative">Updated %1$s</string>
