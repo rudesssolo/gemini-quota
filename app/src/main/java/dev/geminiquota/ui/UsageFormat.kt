@@ -8,6 +8,9 @@ import dev.geminiquota.data.PlanTier
 import dev.geminiquota.data.UsageSnapshot
 import dev.geminiquota.data.UsageWindow
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
 
@@ -59,6 +62,9 @@ object UsageFormat {
     /** How a window's reset time should be presented. */
     enum class ResetKind { NONE, SOON, TIMED }
 
+    /** Calendar relation of a reset to today, so nearby resets read naturally. */
+    enum class ResetDay { TODAY, TOMORROW, OTHER }
+
     fun resetKind(
         resetAtEpochMs: Long?,
         nowMs: Long = System.currentTimeMillis(),
@@ -66,6 +72,30 @@ object UsageFormat {
         resetAtEpochMs == null -> ResetKind.NONE
         resetAtEpochMs <= nowMs -> ResetKind.SOON
         else -> ResetKind.TIMED
+    }
+
+    fun resetDay(
+        resetAtEpochMs: Long,
+        nowMs: Long = System.currentTimeMillis(),
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): ResetDay {
+        val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
+        val reset = Instant.ofEpochMilli(resetAtEpochMs).atZone(zone).toLocalDate()
+        return when (ChronoUnit.DAYS.between(today, reset)) {
+            0L -> ResetDay.TODAY
+            1L -> ResetDay.TOMORROW
+            else -> ResetDay.OTHER
+        }
+    }
+
+    /** Just the time of day, e.g. `03:10` — used for today/tomorrow resets. */
+    fun resetClock(
+        resetAtEpochMs: Long,
+        twentyFourHour: Boolean,
+        locale: Locale,
+    ): String {
+        val pattern = if (twentyFourHour) "HH:mm" else "h:mm a"
+        return SimpleDateFormat(pattern, locale).format(Date(resetAtEpochMs))
     }
 
     /**
@@ -97,13 +127,28 @@ object UsageFormat {
 
         ResetKind.SOON -> context.getString(R.string.reset_soon)
 
-        ResetKind.TIMED -> context.getString(
-            R.string.resets_at,
-            resetDateTime(
-                resetAtEpochMs = window!!.resetAtEpochMs!!,
-                twentyFourHour = DateFormat.is24HourFormat(context),
-                locale = context.resources.configuration.locales[0],
-            ),
-        )
+        ResetKind.TIMED -> {
+            // "today"/"tomorrow" beat a date the user has to decode: the 5-hour
+            // reset is almost always today, the weekly one within a week.
+            val reset = window!!.resetAtEpochMs!!
+            val twentyFourHour = DateFormat.is24HourFormat(context)
+            val locale = context.resources.configuration.locales[0]
+            when (resetDay(reset, nowMs)) {
+                ResetDay.TODAY -> context.getString(
+                    R.string.resets_today,
+                    resetClock(reset, twentyFourHour, locale),
+                )
+
+                ResetDay.TOMORROW -> context.getString(
+                    R.string.resets_tomorrow,
+                    resetClock(reset, twentyFourHour, locale),
+                )
+
+                ResetDay.OTHER -> context.getString(
+                    R.string.resets_at,
+                    resetDateTime(reset, twentyFourHour, locale),
+                )
+            }
+        }
     }
 }

@@ -177,13 +177,18 @@ object QuotaWidgetRenderer {
 
         val snapshot = state.snapshot
         if (snapshot != null) {
-            val relative = DateUtils.getRelativeTimeSpanString(
-                snapshot.fetchedAtEpochMs,
-                System.currentTimeMillis(),
-                DateUtils.MINUTE_IN_MILLIS,
-                DateUtils.FORMAT_ABBREV_RELATIVE,
-            ).toString()
-            val updated = context.getString(R.string.updated_relative, relative)
+            val ageMs = System.currentTimeMillis() - snapshot.fetchedAtEpochMs
+            val updated = if (ageMs < DateUtils.MINUTE_IN_MILLIS) {
+                context.getString(R.string.updated_just_now)
+            } else {
+                val relative = DateUtils.getRelativeTimeSpanString(
+                    snapshot.fetchedAtEpochMs,
+                    System.currentTimeMillis(),
+                    DateUtils.MINUTE_IN_MILLIS,
+                    DateUtils.FORMAT_ABBREV_RELATIVE,
+                ).toString()
+                context.getString(R.string.updated_relative, relative)
+            }
             return if (state.errorKind != null) {
                 "$updated · ${context.getString(R.string.offline_suffix)}"
             } else {

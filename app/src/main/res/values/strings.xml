@@ -11,9 +11,12 @@
     <string name="percent_format">%1$d%%</string>
     <string name="percent_used_label">used</string>
     <string name="resets_at">Resets %1$s</string>
+    <string name="resets_today">Resets today · %1$s</string>
+    <string name="resets_tomorrow">Resets tomorrow · %1$s</string>
     <string name="reset_unknown">Reset time unavailable</string>
     <string name="window_not_reported">Not reported</string>
     <string name="updated_relative">Updated %1$s</string>
+    <string name="updated_just_now">Updated just now</string>
     <string name="refreshing">Refreshing…</string>
     <string name="widget_connect_title">Connect Gemini</string>
     <string name="widget_connect_body">Tap to sign in and see your 5-hour and weekly limits.</string>

@@ -11,13 +11,14 @@ shows — with the exact date and time each window resets.
 
 | Widget state | Content |
 |---|---|
-| Signed in | 5-hour window and weekly window: % used, progress bar, an absolute "Resets Sun 25 Oct · 14:30" line, plan chip, last-updated stamp |
+| Signed in | 5-hour window and weekly window: % used, full-width progress bar, a reset line that reads "Resets today · 03:10" / "tomorrow" / "Sun 25 Oct · 14:30", plan chip, last-updated stamp |
 | Not signed in | "Connect Gemini — tap to sign in" |
 | Session expired | "Session expired — tap to sign in" |
 | Network/protocol error | Cached numbers stay visible with an "offline" footer, or a retry prompt |
 
-- 5×2 widget, resizable horizontally and vertically (minimum height 120 dp), content centred so no dead
-  row appears at the bottom. Light/dark aware.
+- 5×2 widget, resizable horizontally and vertically (minimum height 160 dp). Surplus height is shared
+  evenly between three spacers, so the card always looks filled instead of showing a dead band. Light/dark
+  aware.
 - Tap the body to open the dashboard; tap the refresh icon to fetch immediately.
 - Limits are **compute-based**, so the widget reports percentages and reset times — not a fake
   "prompts remaining" count.

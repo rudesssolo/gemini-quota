@@ -4,6 +4,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -11,6 +12,8 @@ import java.util.TimeZone
 class UsageFormatTest {
 
     private lateinit var originalTimeZone: TimeZone
+
+    private val zone = ZoneId.of("UTC")
 
     @Before
     fun pinTimeZone() {
@@ -65,6 +68,37 @@ class UsageFormatTest {
         assertEquals(
             "Mon 26 Oct · 9:05 AM",
             normalize(UsageFormat.resetDateTime(reset, twentyFourHour = false, locale = Locale.US)),
+        )
+    }
+
+    @Test
+    fun `classifies a reset later today as today`() {
+        val now = utc(2026, Calendar.OCTOBER, 25, 8, 0)
+        val reset = utc(2026, Calendar.OCTOBER, 25, 14, 30)
+        assertEquals(UsageFormat.ResetDay.TODAY, UsageFormat.resetDay(reset, now, zone))
+    }
+
+    @Test
+    fun `classifies the next calendar day as tomorrow`() {
+        val now = utc(2026, Calendar.OCTOBER, 25, 23, 30)
+        val reset = utc(2026, Calendar.OCTOBER, 26, 3, 10)
+        assertEquals(UsageFormat.ResetDay.TOMORROW, UsageFormat.resetDay(reset, now, zone))
+    }
+
+    @Test
+    fun `classifies a distant reset as other`() {
+        val now = utc(2026, Calendar.OCTOBER, 25, 12, 0)
+        val reset = utc(2026, Calendar.OCTOBER, 27, 10, 10)
+        assertEquals(UsageFormat.ResetDay.OTHER, UsageFormat.resetDay(reset, now, zone))
+    }
+
+    @Test
+    fun `renders just the clock for near resets`() {
+        val reset = utc(2026, Calendar.OCTOBER, 26, 3, 10)
+        assertEquals("03:10", UsageFormat.resetClock(reset, twentyFourHour = true, locale = Locale.US))
+        assertEquals(
+            "3:10 AM",
+            normalize(UsageFormat.resetClock(reset, twentyFourHour = false, locale = Locale.US)),
         )
     }
 
