@@ -73,6 +73,12 @@ object QuotaWidgetRenderer {
             R.id.state_container,
             if (hasData) View.GONE else View.VISIBLE,
         )
+        // The footer now shares the title row, so it must not repeat the
+        // empty-state text that state_container already shows.
+        views.setViewVisibility(
+            R.id.footer,
+            if (hasData) View.VISIBLE else View.GONE,
+        )
         if (hasData) {
             views.setViewVisibility(R.id.status_dot, View.VISIBLE)
             views.setTextColor(
