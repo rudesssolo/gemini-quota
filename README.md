@@ -1,11 +1,25 @@
 # Gemini Quota
 
+[![build](https://github.com/rudesssolo/gemini-quota/actions/workflows/build.yml/badge.svg)](https://github.com/rudesssolo/gemini-quota/actions/workflows/build.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-0B57D0.svg)](LICENSE)
+
 An Android home-screen widget that shows your **Gemini subscription usage limits** — the same
 compute-based 5-hour and weekly windows that [gemini.google.com/usage](https://gemini.google.com/usage)
 shows — with the exact date and time each window resets.
 
-> Unofficial, personal-use project. Not affiliated with Google. Google does not publish an API for
+> **Status: personal project, shared as-is.** It was written for one phone and one Google account. The
+> endpoints it reads are internal and undocumented, so they can change or vanish without notice, and
+> Google can block the cookie-import path at any time. No roadmap, no support promises.
+
+> Unofficial and not affiliated with Google. Google does not publish an API for
 > consumer Gemini subscription usage, so the app reads the same internal endpoints the usage page uses.
+
+## What it looks like
+
+![The Gemini Quota widget: a 5-hour window at 42 % and a weekly window at 18 %, each with a full-width bar and its reset time](docs/widget-mock.svg)
+
+*Redrawn from the app's own dark-theme palette (`values-night/colors.xml`). The percentages and reset
+times are placeholders, not real usage.*
 
 ## What it shows
 
@@ -202,13 +216,16 @@ app/src/main/java/dev/geminiquota/
     └── CookiePasteDialog.kt       Cookie import fallback
 ```
 
-Tests live in `app/src/test/java/dev/geminiquota/data/` and cover both parsers, token extraction,
-cookie normalization, snapshot round-trips, and the HTTP client (status mapping, auth detection,
-GraphQL → batchexecute fallback) using `MockWebServer`.
+Tests live in `app/src/test/java/dev/geminiquota/` — `data/` covers both parsers, token extraction,
+cookie normalization, snapshot round-trips and the HTTP client (status mapping, auth detection,
+GraphQL → batchexecute fallback) using `MockWebServer`; `ui/` covers the reset-time formatting.
 
 ## License
 
-No license file is included; treat this as a personal project. The implementation was informed by
-publicly documented behavior of the Gemini web usage page (CodexBar's gemini-web plugin and the
-"Gemini Usage Monitor" userscript). All trademarks belong to Google.
+MIT — see [LICENSE](LICENSE). Copyright © 2026 Marco Flavio Gemello.
+
+The license covers this code only. The implementation was informed by publicly documented behaviour of
+the Gemini web usage page (CodexBar's gemini-web plugin and the "Gemini Usage Monitor" userscript), and
+all trademarks belong to Google. Read the [Limitations and risks](#limitations-and-risks) section before
+pointing this at your own account.
 
