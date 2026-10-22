@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#A8C7FA</color>
+    <color name="accent_secondary">#C6A0FF</color>
+    <color name="on_accent">#062E6F</color>
+
+    <color name="app_background">#111318</color>
+    <color name="surface">#1C1F24</color>
+    <color name="surface_variant">#25304A</color>
+    <color name="text_primary">#E3E3E3</color>
+    <color name="text_secondary">#A8ABB4</color>
+    <color name="outline">#33FFFFFF</color>
+
+    <color name="severity_ok">#81C995</color>
+    <color name="severity_warn">#FDD663</color>
+    <color name="severity_danger">#F28B82</color>
+
+    <color name="widget_surface">#1C1F24</color>
+    <color name="widget_track">#3C4043</color>
+</resources>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gemini Quota</string>
+
+    <!-- Widget -->
+    <string name="widget_label">Gemini limits</string>
+    <string name="widget_description">Shows your Gemini 5-hour and weekly usage limits.</string>
+    <string name="widget_title">Gemini limits</string>
+    <string name="window_five_hour">5-hour window</string>
+    <string name="window_weekly">Weekly window</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="percent_used_label">used</string>
+    <string name="resets_in">Resets in %s</string>
+    <string name="reset_unknown">Reset time unavailable</string>
+    <string name="window_not_reported">Not reported</string>
+    <string name="updated_relative">Updated %1$s</string>
+    <string name="refreshing">Refreshing…</string>
+    <string name="widget_connect_title">Connect Gemini</string>
+    <string name="widget_connect_body">Tap to sign in and see your 5-hour and weekly limits.</string>
+    <string name="widget_session_expired">Session expired — tap to sign in</string>
+    <string name="widget_load_failed">Couldn\'t load limits — tap to retry</string>
+    <string name="widget_offline">Offline — showing last update</string>
+    <string name="widget_signed_out_footer">Not signed in</string>
+    <string name="widget_loading">Loading…</string>
+    <string name="widget_loading_body">Fetching your Gemini usage…</string>
+    <string name="widget_error_title">Couldn\'t load limits</string>
+    <string name="widget_error_body">Tap to retry, or open the app for details.</string>
+    <string name="widget_expired_body">Tap to sign in again.</string>
+    <string name="reset_soon">Resetting…</string>
+    <string name="offline_suffix">offline</string>
+    <string name="widget_open_app">Open Gemini Quota</string>
+    <string name="widget_refresh">Refresh usage</string>
+
+    <!-- App -->
+    <string name="dashboard_title">Gemini limits</string>
+    <string name="dashboard_subtitle">Compute-based limits, refreshed from gemini.google.com/usage.</string>
+    <string name="connect_title">Connect your Google account</string>
+    <string name="connect_body">Google does not publish an API for Gemini subscription usage, so this app reads the same numbers as gemini.google.com/usage using a session that stays on this device.</string>
+    <string name="connect_button">Sign in to Gemini</string>
+    <string name="connect_paste_button">Paste session cookies instead</string>
+    <string name="signed_in_hint">Signed in · session stored encrypted on this device</string>
+    <string name="refresh_now">Refresh now</string>
+    <string name="open_gemini_usage">Open gemini.google.com/usage</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_sign_out">Sign out</string>
+    <string name="action_about">About &amp; privacy</string>
+    <string name="action_paste_cookies">Paste cookies</string>
+    <string name="auto_refresh_note">Auto-refreshes every 15 minutes, and when the widget is tapped.</string>
+    <string name="plan_unknown">Gemini</string>
+    <string name="plan_free">Free</string>
+    <string name="plan_ai_pro">AI Pro</string>
+    <string name="plan_ai_ultra">AI Ultra</string>
+
+    <!-- Login -->
+    <string name="login_title">Sign in to Gemini</string>
+    <string name="login_hint">Sign in with the Google account that has your Gemini plan. The session is stored encrypted on this device only.</string>
+    <string name="login_verifying">Checking your session…</string>
+    <string name="login_failed">Sign-in didn\'t complete. Try again, or paste cookies manually.</string>
+    <string name="login_blocked">Google may block sign-in inside embedded browsers. If you see “browser or app may not be secure”, use “Paste cookies” instead.</string>
+    <string name="paste_cookies_title">Paste session cookies</string>
+    <string name="paste_cookies_body">Paste the Cookie request header from a browser signed in to gemini.google.com. It must include cookies such as __Secure-1PSID and SAPISID.</string>
+    <string name="paste_cookies_hint">SID=…; HSID=…; __Secure-1PSID=…</string>
+    <string name="connect_failed">That session could not be verified. Make sure the cookies are current and complete.</string>
+    <string name="connect_invalid">That does not look like a Gemini cookie header.</string>
+    <string name="connect_success">Connected</string>
+
+    <!-- Dialogs -->
+    <string name="sign_out_title">Sign out of Gemini?</string>
+    <string name="sign_out_body">This removes the stored session cookies, cached usage and widget data from this device.</string>
+    <string name="sign_out_confirm">Sign out</string>
+    <string name="cancel">Cancel</string>
+    <string name="about_title">About &amp; privacy</string>
+    <string name="about_body">Gemini Quota is an unofficial, personal-use app. It is not affiliated with Google.\n\n• Usage is read from the signed-in Gemini web session (gemini.google.com/usage) because Google does not publish a public API for subscription limits.\n• The session cookie is stored encrypted with a key held in the Android Keystore and is only sent to gemini.google.com.\n• Usage data and the session never leave this device. There is no analytics or tracking.\n• Gemini limits are compute-based: the app shows the percentage used and when each window resets, not a count of remaining prompts.\n• Google can change or block these endpoints at any time; the widget will then report that it needs a new sign-in or that the response format changed.\n\nUse at your own risk and in line with Google\'s terms of service.</string>
+    <string name="close">Close</string>
+    <string name="error_details_title">Last error details</string>
+
+    <!-- Errors -->
+    <string name="error_network">Network error. Check your connection.</string>
+    <string name="error_auth">Session expired. Sign in again.</string>
+    <string name="error_rate_limited">Gemini is rate limiting usage checks. Try again later.</string>
+    <string name="error_server">Gemini returned an error. Try again later.</string>
+    <string name="error_protocol">Gemini changed its usage response format. Open the app for details.</string>
+    <string name="error_unknown">Something went wrong.</string>
+    <string name="error_not_signed_in">Not signed in.</string>
+</resources>
