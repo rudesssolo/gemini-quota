@@ -19,7 +19,11 @@ import kotlinx.coroutines.launch
  */
 object CookiePasteDialog {
 
-    fun show(activity: AppCompatActivity, onConnected: () -> Unit = {}) {
+    fun show(
+        activity: AppCompatActivity,
+        prefill: String? = null,
+        onConnected: () -> Unit = {},
+    ) {
         val binding = DialogCookiePasteBinding.inflate(activity.layoutInflater)
         val dialog = MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.paste_cookies_title)
@@ -28,7 +32,9 @@ object CookiePasteDialog {
             .setNegativeButton(R.string.cancel, null)
             .create()
 
+        if (!prefill.isNullOrBlank()) binding.cookieInput.setText(prefill)
         binding.cookieInput.doAfterTextChanged { render(activity, binding) }
+        binding.clipboardButton.setOnClickListener { pasteClipboard(activity, binding) }
         binding.helpButton.setOnClickListener { showHelp(activity) }
         render(activity, binding)
 
@@ -92,7 +98,18 @@ object CookiePasteDialog {
         }
     }
 
-    private fun showHelp(activity: AppCompatActivity) {
+    private fun pasteClipboard(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
+        val copied = ClipboardCookies.read(activity)
+        if (copied.isNullOrBlank()) {
+            Toast.makeText(activity, R.string.paste_clipboard_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        binding.cookieLayout.error = null
+        binding.cookieInput.setText(copied)
+        binding.cookieInput.setSelection(binding.cookieInput.text?.length ?: 0)
+    }
+
+    fun showHelp(activity: AppCompatActivity) {
         MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.paste_cookies_help_title)
             .setMessage(R.string.paste_cookies_help_body)

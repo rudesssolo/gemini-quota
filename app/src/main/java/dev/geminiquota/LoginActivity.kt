@@ -19,13 +19,14 @@ import dev.geminiquota.data.ConnectResult
 import dev.geminiquota.data.CookieUtils
 import dev.geminiquota.data.GeminiUsageClient
 import dev.geminiquota.databinding.ActivityLoginBinding
+import dev.geminiquota.ui.ClipboardCookies
 import dev.geminiquota.ui.CookiePasteDialog
 import dev.geminiquota.work.RefreshScheduler
 import kotlinx.coroutines.launch
 
 /**
- * In-app Google sign-in. Google sometimes blocks embedded WebViews, so a
- * cookie-paste fallback lives in the overflow menu.
+ * In-app Google sign-in. Google often blocks embedded WebViews, so the screen
+ * always offers "Import copied cookies" as a one-tap alternative.
  */
 class LoginActivity : AppCompatActivity() {
 
@@ -42,7 +43,8 @@ class LoginActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.status.text = getString(R.string.login_blocked)
-        binding.pasteInstead.setOnClickListener { openPasteDialog() }
+        binding.importButton.setOnClickListener { importCookies() }
+        binding.importHelpButton.setOnClickListener { CookiePasteDialog.showHelp(this) }
 
         onBackPressedDispatcher.addCallback(this) {
             if (binding.webView.canGoBack()) {
@@ -64,15 +66,16 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.action_paste_cookies -> {
-            openPasteDialog()
+            importCookies()
             true
         }
 
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun openPasteDialog() {
-        CookiePasteDialog.show(this) {
+    /** Copies what is on the clipboard into the dialog, so one tap is enough. */
+    private fun importCookies() {
+        CookiePasteDialog.show(this, prefill = ClipboardCookies.read(this)) {
             setResult(RESULT_OK)
             finish()
         }
@@ -170,6 +173,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showBlocked() {
         binding.status.text = getString(R.string.login_blocked_detected)
+        binding.importCardBody.setText(R.string.import_card_body_blocked)
     }
 
     override fun onDestroy() {

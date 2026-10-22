@@ -34,10 +34,10 @@
     <!-- App -->
     <string name="dashboard_title">Gemini limits</string>
     <string name="dashboard_subtitle">Compute-based limits, refreshed from gemini.google.com/usage.</string>
-    <string name="connect_title">Connect your Google account</string>
-    <string name="connect_body">Google does not publish an API for Gemini subscription usage, so this app reads the same numbers as gemini.google.com/usage using a session that stays on this device.</string>
-    <string name="connect_button">Sign in to Gemini</string>
-    <string name="connect_paste_button">Paste session cookies instead</string>
+    <string name="connect_title">Connect Gemini</string>
+    <string name="connect_body">Sign in once with the Google account that has your Gemini plan. The session stays on this device.</string>
+    <string name="connect_button">Sign in with Google</string>
+    <string name="connect_paste_button">Import copied cookies</string>
     <string name="signed_in_hint">Signed in · session stored encrypted on this device</string>
     <string name="refresh_now">Refresh now</string>
     <string name="open_gemini_usage">Open gemini.google.com/usage</string>
@@ -56,17 +56,17 @@
     <string name="login_hint">Sign in with the Google account that has your Gemini plan. The session is stored encrypted on this device only.</string>
     <string name="login_verifying">Checking your session…</string>
     <string name="login_failed">Sign-in didn\'t complete. Try again, or paste cookies manually.</string>
-    <string name="login_blocked">Google may block sign-in inside embedded browsers. If you see “browser or app may not be secure”, use “Paste cookies” instead.</string>
+    <string name="login_blocked">Sign in below. If Google says your browser “may not be secure”, tap Import — that is expected.</string>
     <string name="paste_cookies_title">Paste session cookies</string>
-    <string name="paste_cookies_body">Paste the Cookie request header (or a JSON cookie export) from a browser signed in to gemini.google.com. It must include HttpOnly session cookies such as __Secure-1PSID and SAPISID.</string>
+    <string name="paste_cookies_body">Paste the cookie text you copied. A Cookie header, a “Copy as cURL” command, or a JSON cookie export all work.</string>
     <string name="paste_cookies_hint">SID=…; HSID=…; __Secure-1PSID=…</string>
     <string name="paste_cookies_status_empty">Supported: a Cookie header, “Copy as cURL”, or a JSON cookie export.</string>
     <string name="paste_cookies_status_ready">%1$d cookies found · session cookies: %2$s</string>
     <string name="paste_cookies_status_no_session">%1$d cookies found, but no Google session cookie. A “document.cookie” copy is missing the HttpOnly cookies (SID, __Secure-1PSID) — export from DevTools or Cookie-Editor instead.</string>
     <string name="paste_cookies_help_button">How do I get this?</string>
     <string name="paste_cookies_help_title">Getting your session cookies</string>
-    <string name="paste_cookies_help_body">Google blocks sign-in inside apps, so the session has to be exported from a real browser.\n\nFrom a computer (most reliable)\n1. Sign in at gemini.google.com in Chrome or Firefox.\n2. Open DevTools (F12) and switch to the Network tab, then reload the page.\n3. Select the first request to gemini.google.com.\n4. Under Request Headers, right-click the Cookie header and choose Copy value.\n   Or right-click the request → Copy → Copy as cURL.\n5. Send that text to this phone (email, notes, Keep…) and paste it above.\n\nOn the phone (harder)\nAndroid browsers do not expose HttpOnly cookies, so you need a browser that supports Chrome extensions — for example Kiwi, Mises or Lemur — signed in at gemini.google.com, with the “Cookie-Editor” extension open on that tab. Use Export → Copy, then paste the JSON above.\n\nWhy document.cookie does not work\nRunning “document.cookie” in the page console never returns the HttpOnly cookies (SID, __Secure-1PSID, SAPISID), so the request is not authenticated.\n\nAnything you paste is encrypted with a key in the Android Keystore and only ever sent to gemini.google.com.</string>
-    <string name="login_blocked_detected">Google refused sign-in inside the app — this is expected for embedded browsers. Tap “Paste session cookies instead” below and follow the steps.</string>
+    <string name="paste_cookies_help_body">Google blocks sign-in inside apps, so the app needs the cookies from a browser where you are already signed in.\n\nOn a computer (easiest)\n1. Open gemini.google.com and press F12, then the Network tab.\n2. Reload the page and click the first gemini.google.com request.\n3. Right-click the “cookie” request header and choose Copy value.\n4. Send that text to this phone (Keep, email, chat) and copy it there.\n\nOn the phone\nUse a browser that supports extensions (Kiwi, Mises, Lemur) plus Cookie-Editor: Export, then Copy.\n\nThen open this app and tap “Import copied cookies”. Nothing is uploaded; the cookies are stored encrypted on this device only.</string>
+    <string name="login_blocked_detected">Google blocked sign-in inside the app — that is normal and not a bug. Copy your cookies from a browser, then tap Import.</string>
     <string name="connect_failed">That session could not be verified. Make sure the cookies are current and complete.</string>
     <string name="connect_invalid">That does not look like a Gemini cookie header.</string>
     <string name="connect_success">Connected</string>
@@ -89,4 +89,12 @@
     <string name="error_protocol">Gemini changed its usage response format. Open the app for details.</string>
     <string name="error_unknown">Something went wrong.</string>
     <string name="error_not_signed_in">Not signed in.</string>
+
+    <string name="import_card_title">Can\'t sign in here?</string>
+    <string name="import_card_body">Copy your Gemini cookies in a browser, then tap Import — the app reads the clipboard for you.</string>
+    <string name="import_card_body_blocked">Google blocked sign-in inside the app — this is normal. Copy your cookies from a browser, then tap Import.</string>
+    <string name="import_button">Import copied cookies</string>
+    <string name="import_help_button">How?</string>
+    <string name="paste_clipboard_button">Paste from clipboard</string>
+    <string name="paste_clipboard_empty">Nothing to paste — copy your cookies first.</string>
 </resources>

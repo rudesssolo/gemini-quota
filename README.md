@@ -93,36 +93,37 @@ android.aapt2FromMavenOverride=/opt/android-arm64-build-tools/aapt2
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-1. Open **Gemini Quota** and tap **Sign in to Gemini**. The app opens `gemini.google.com/usage` in a
+1. Open **Gemini Quota** and tap **Sign in with Google**. The app opens `gemini.google.com/usage` in a
    WebView with a desktop Chrome user agent.
-2. Sign in with the Google account that holds your Gemini plan. The app verifies the session by
-   fetching usage, then stores the cookies encrypted.
-3. Long-press your home screen → **Widgets** → **Gemini Quota** → drag the 4×3 widget out.
-4. Tap the refresh icon any time you want an immediate update.
+2. Sign in with the Google account that holds your Gemini plan. If Google refuses embedded browsers
+   (see below), use **Import copied cookies** on the same screen instead.
+3. The app verifies the session by fetching usage, then stores the cookies encrypted.
+4. Long-press your home screen → **Widgets** → **Gemini Quota** → drag the 4×3 widget out.
+5. Tap the refresh icon any time you want an immediate update.
 
 ### If Google blocks the embedded sign-in
 
-This is the common case: Google refuses OAuth inside any embedded WebView with *"This browser or
-app may not be secure"*, and no user-agent trick changes that. The app detects that page and points
-you at the import fallback (**Paste session cookies instead**, also in the overflow menu and in the
-paste dialog's **How do I get this?** help).
+This is the normal case: Google refuses OAuth inside any embedded WebView with *"This browser or app
+may not be secure"*, and no user-agent trick changes that. The login screen detects the block and
+shows one card with a single action: **Import copied cookies**.
 
-The import accepts any of these, and validates the session against Gemini before saving it:
+Copy the cookies in a browser where you are already signed in, send that text to the phone (Keep,
+email, chat) and copy it there. Then open the app and tap **Import copied cookies** — the app reads
+the clipboard for you, shows a green status when a Google session was found, and connects.
 
-| Input | How to get it |
-| --- | --- |
-| `Cookie:` request header | DevTools → Network → first `gemini.google.com` request → right-click the `Cookie` header → *Copy value* |
-| `Copy as cURL` | Same request → right-click → *Copy* → *Copy as cURL* (only the `cookie:` part is used) |
-| JSON cookie export | Cookie-Editor → *Export* → *Copy* (cookies from other sites are ignored) |
+How to get the text, easiest first:
 
-You need the **HttpOnly** session cookies — `SID`, `__Secure-1PSID`, `SAPISID` and friends. A copy of
-`document.cookie` never contains them, so the request would be unauthenticated; the dialog says so
-before you submit.
+1. **Desktop, 4 steps:** open `gemini.google.com` → **F12 → Network** → reload → click the first
+   `gemini.google.com` request → right-click the `cookie` request header → **Copy value**.
+2. **Desktop, one click:** same request → right-click → **Copy → Copy as cURL** (only the `cookie:`
+   part is used).
+3. **Android, no computer:** install a Chromium fork with extension support (Kiwi, Mises, Lemur)
+   plus **Cookie-Editor**, then *Export → Copy*. Chrome and Firefox for Android cannot export
+   HttpOnly cookies.
 
-Cookies have to come from a real browser that can export HttpOnly cookies. A desktop browser is the
-most reliable route (copy the header, send it to the phone, paste). On Android you need a browser with
-Chrome-extension support (Kiwi, Mises, Lemur) plus Cookie-Editor, because Chrome and Firefox for
-Android cannot export HttpOnly cookies.
+A plain `document.cookie` copy does not work: the session cookies (`SID`, `__Secure-1PSID`,
+`SAPISID`) are HttpOnly, so the request would be unauthenticated. The dialog flags that in red
+before you can submit.
 
 ## Security and privacy
 

@@ -14,6 +14,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.geminiquota.data.UsageUiState
 import dev.geminiquota.databinding.ActivityMainBinding
+import dev.geminiquota.ui.ClipboardCookies
 import dev.geminiquota.ui.CookiePasteDialog
 import dev.geminiquota.ui.MainRenderer
 import kotlinx.coroutines.launch
@@ -38,7 +39,9 @@ class MainActivity : AppCompatActivity() {
         binding.connectButton.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }
-        binding.pasteButton.setOnClickListener { CookiePasteDialog.show(this) }
+        binding.pasteButton.setOnClickListener {
+            CookiePasteDialog.show(this, prefill = ClipboardCookies.read(this))
+        }
         binding.openUsageButton.setOnClickListener { openUsagePage() }
         binding.errorDetailsButton.setOnClickListener { showErrorDetails() }
 
