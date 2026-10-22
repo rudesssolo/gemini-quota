@@ -19,7 +19,6 @@
     <string name="widget_connect_body">Tap to sign in and see your 5-hour and weekly limits.</string>
     <string name="widget_session_expired">Session expired — tap to sign in</string>
     <string name="widget_load_failed">Couldn\'t load limits — tap to retry</string>
-    <string name="widget_offline">Offline — showing last update</string>
     <string name="widget_signed_out_footer">Not signed in</string>
     <string name="widget_loading">Loading…</string>
     <string name="widget_loading_body">Fetching your Gemini usage…</string>
@@ -28,7 +27,6 @@
     <string name="widget_expired_body">Tap to sign in again.</string>
     <string name="reset_soon">Resetting…</string>
     <string name="offline_suffix">offline</string>
-    <string name="widget_open_app">Open Gemini Quota</string>
     <string name="widget_refresh">Refresh usage</string>
 
     <!-- App -->
@@ -39,21 +37,18 @@
     <string name="connect_button">Sign in with Google</string>
     <string name="connect_paste_button">Import copied cookies</string>
     <string name="signed_in_hint">Signed in · session stored encrypted on this device</string>
-    <string name="refresh_now">Refresh now</string>
     <string name="open_gemini_usage">Open gemini.google.com/usage</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_sign_out">Sign out</string>
     <string name="action_about">About &amp; privacy</string>
     <string name="action_paste_cookies">Paste cookies</string>
     <string name="auto_refresh_note">Auto-refreshes every 15 minutes, and when the widget is tapped.</string>
-    <string name="plan_unknown">Gemini</string>
     <string name="plan_free">Free</string>
     <string name="plan_ai_pro">AI Pro</string>
     <string name="plan_ai_ultra">AI Ultra</string>
 
     <!-- Login -->
     <string name="login_title">Sign in to Gemini</string>
-    <string name="login_hint">Sign in with the Google account that has your Gemini plan. The session is stored encrypted on this device only.</string>
     <string name="login_verifying">Checking your session…</string>
     <string name="login_failed">Sign-in didn\'t complete. Try again, or paste cookies manually.</string>
     <string name="login_blocked">Sign in below. If Google says your browser “may not be secure”, tap Import — that is expected.</string>
@@ -88,7 +83,6 @@
     <string name="error_server">Gemini returned an error. Try again later.</string>
     <string name="error_protocol">Gemini changed its usage response format. Open the app for details.</string>
     <string name="error_unknown">Something went wrong.</string>
-    <string name="error_not_signed_in">Not signed in.</string>
 
     <string name="import_card_title">Can\'t sign in here?</string>
     <string name="import_card_body">Copy your Gemini cookies in Firefox with the Cookie-Editor add-on, then tap Import — the app reads the clipboard for you.</string>
