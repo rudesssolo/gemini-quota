@@ -16,7 +16,7 @@ shows — with the exact date and time each window resets.
 | Session expired | "Session expired — tap to sign in" |
 | Network/protocol error | Cached numbers stay visible with an "offline" footer, or a retry prompt |
 
-- 4×3 widget, resizable horizontally and vertically, with a 190 dp minimum height so neither reset line
+- 5×3 widget, resizable horizontally and vertically, with a 190 dp minimum height so neither reset line
   can be clipped by the bottom edge. Light/dark aware.
 - Tap the body to open the dashboard; tap the refresh icon to fetch immediately.
 - Limits are **compute-based**, so the widget reports percentages and reset times — not a fake
@@ -101,7 +101,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 2. Sign in with the Google account that holds your Gemini plan. If Google refuses embedded browsers
    (see below), use **Import copied cookies** on the same screen instead.
 3. The app verifies the session by fetching usage, then stores the cookies encrypted.
-4. Long-press your home screen → **Widgets** → **Gemini Quota** → drag the 4×3 widget out.
+4. Long-press your home screen → **Widgets** → **Gemini Quota** → drag the 5×3 widget out.
 5. Tap the refresh icon any time you want an immediate update.
 
 ### If Google blocks the embedded sign-in

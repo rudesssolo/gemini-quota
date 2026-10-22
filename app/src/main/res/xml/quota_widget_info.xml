@@ -5,10 +5,10 @@
     android:minHeight="190dp"
     android:minResizeHeight="190dp"
     android:minResizeWidth="220dp"
-    android:minWidth="250dp"
+    android:minWidth="320dp"
     android:previewLayout="@layout/widget_quota"
     android:resizeMode="horizontal|vertical"
     android:targetCellHeight="3"
-    android:targetCellWidth="4"
+    android:targetCellWidth="5"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen" />
