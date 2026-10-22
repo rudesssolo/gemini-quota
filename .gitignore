@@ -8,3 +8,7 @@
 .externalNativeBuild/
 .cxx/
 /app/build/
+
+# Screenshots dropped in the repo root for review, never committed
+/*.jpg
+/*.png
