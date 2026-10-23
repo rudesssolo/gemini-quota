@@ -1,6 +1,5 @@
 package dev.geminiquota.ui
 
-import android.text.format.DateUtils
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -52,13 +51,7 @@ class MainRenderer(
         }
 
         binding.updatedText.text = snapshot?.let {
-            val relative = DateUtils.getRelativeTimeSpanString(
-                it.fetchedAtEpochMs,
-                System.currentTimeMillis(),
-                DateUtils.MINUTE_IN_MILLIS,
-                DateUtils.FORMAT_ABBREV_RELATIVE,
-            )
-            activity.getString(R.string.updated_relative, relative.toString())
+            UsageFormat.updatedLabel(activity, it.fetchedAtEpochMs)
         }.orEmpty()
     }
 

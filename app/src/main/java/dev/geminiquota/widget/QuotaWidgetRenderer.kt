@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.text.format.DateUtils
 import android.view.View
 import android.widget.RemoteViews
 import dev.geminiquota.MainActivity
@@ -177,18 +176,7 @@ object QuotaWidgetRenderer {
 
         val snapshot = state.snapshot
         if (snapshot != null) {
-            val ageMs = System.currentTimeMillis() - snapshot.fetchedAtEpochMs
-            val updated = if (ageMs < DateUtils.MINUTE_IN_MILLIS) {
-                context.getString(R.string.updated_just_now)
-            } else {
-                val relative = DateUtils.getRelativeTimeSpanString(
-                    snapshot.fetchedAtEpochMs,
-                    System.currentTimeMillis(),
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.FORMAT_ABBREV_RELATIVE,
-                ).toString()
-                context.getString(R.string.updated_relative, relative)
-            }
+            val updated = UsageFormat.updatedLabel(context, snapshot.fetchedAtEpochMs)
             return if (state.errorKind != null) {
                 "$updated · ${context.getString(R.string.offline_suffix)}"
             } else {

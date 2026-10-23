@@ -2,6 +2,7 @@ package dev.geminiquota.ui
 
 import android.content.Context
 import android.text.format.DateFormat
+import android.text.format.DateUtils
 import androidx.annotation.ColorRes
 import dev.geminiquota.R
 import dev.geminiquota.data.PlanTier
@@ -58,6 +59,28 @@ object UsageFormat {
 
     fun percentText(context: Context, window: UsageWindow?): String =
         if (window == null) "—" else context.getString(R.string.percent_format, window.usedPercent)
+
+    /**
+     * "Updated just now" under a minute, otherwise "Updated 4 min ago". Shared so
+     * the widget and the dashboard never disagree, and so a fresh fetch does not
+     * read as the odd "Updated 0 min ago".
+     */
+    fun updatedLabel(
+        context: Context,
+        fetchedAtEpochMs: Long,
+        nowMs: Long = System.currentTimeMillis(),
+    ): String {
+        if (nowMs - fetchedAtEpochMs < DateUtils.MINUTE_IN_MILLIS) {
+            return context.getString(R.string.updated_just_now)
+        }
+        val relative = DateUtils.getRelativeTimeSpanString(
+            fetchedAtEpochMs,
+            nowMs,
+            DateUtils.MINUTE_IN_MILLIS,
+            DateUtils.FORMAT_ABBREV_RELATIVE,
+        ).toString()
+        return context.getString(R.string.updated_relative, relative)
+    }
 
     /** How a window's reset time should be presented. */
     enum class ResetKind { NONE, SOON, TIMED }

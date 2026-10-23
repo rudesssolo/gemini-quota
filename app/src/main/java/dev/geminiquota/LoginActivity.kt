@@ -13,6 +13,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import dev.geminiquota.data.ConnectResult
@@ -21,6 +22,7 @@ import dev.geminiquota.data.GeminiUsageClient
 import dev.geminiquota.databinding.ActivityLoginBinding
 import dev.geminiquota.ui.ClipboardCookies
 import dev.geminiquota.ui.CookiePasteDialog
+import dev.geminiquota.ui.applySystemBarInsets
 import dev.geminiquota.work.RefreshScheduler
 import kotlinx.coroutines.launch
 
@@ -37,8 +39,10 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarInsets()
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
