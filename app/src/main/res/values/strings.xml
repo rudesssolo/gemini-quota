@@ -30,6 +30,7 @@
     <string name="widget_expired_body">Tap to sign in again.</string>
     <string name="reset_soon">Resetting…</string>
     <string name="offline_suffix">offline</string>
+    <string name="rate_limited_suffix">rate limited</string>
     <string name="widget_refresh">Refresh usage</string>
 
     <!-- App -->

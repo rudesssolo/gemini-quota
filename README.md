@@ -67,6 +67,11 @@ battery-friendly model:
 
 - **WorkManager periodic refresh every 15 minutes** (platform minimum), network-constrained.
 - **Immediate refresh** on widget refresh tap, app open (when older than 5 minutes) and after sign-in.
+- **Transient failures are retried, not advertised**: network blips and 5xx answers get up to three
+  attempts (600 ms, then 1.2 s) before anything is recorded, so a Wi-Fi/cellular handover does not cost
+  you a badge. Auth, rate limiting and protocol changes fail fast — retrying those only burns quota.
+- **"offline" means the numbers are stale**, not that one poll failed: the widget only adds that note
+  once the data is more than 20 minutes old, and it says "rate limited" when that is what happened.
 - **Reset-time refresh**: a one-shot job scheduled for `next reset + 60 s`, so the widget updates right
   when a window rolls over.
 - **Absolute reset times, not countdowns**: a `Chronometer` only ticks while its `RemoteViews` is live,

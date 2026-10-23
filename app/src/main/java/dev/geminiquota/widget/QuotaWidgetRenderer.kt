@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.RemoteViews
 import dev.geminiquota.MainActivity
 import dev.geminiquota.R
+import dev.geminiquota.data.ErrorKind
 import dev.geminiquota.data.UsageUiState
 import dev.geminiquota.data.UsageWindow
 import dev.geminiquota.ui.Ramp
@@ -244,11 +245,13 @@ object QuotaWidgetRenderer {
         val snapshot = state.snapshot
         if (snapshot != null) {
             val updated = UsageFormat.updatedLabel(context, snapshot.fetchedAtEpochMs)
-            return if (state.errorKind != null) {
-                "$updated · ${context.getString(R.string.offline_suffix)}"
-            } else {
-                updated
+            val note = state.offlineNote(System.currentTimeMillis())
+                ?: return updated
+            val suffix = when (note) {
+                ErrorKind.RATE_LIMITED -> R.string.rate_limited_suffix
+                else -> R.string.offline_suffix
             }
+            return "$updated · ${context.getString(suffix)}"
         }
 
         if (state.errorKind != null) return context.getString(R.string.widget_load_failed)

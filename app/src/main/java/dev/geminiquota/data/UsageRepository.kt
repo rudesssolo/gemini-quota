@@ -3,6 +3,7 @@ package dev.geminiquota.data
 import android.content.Context
 import dev.geminiquota.work.RefreshScheduler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,7 +55,7 @@ class UsageRepository(
         }
 
         val snapshot = try {
-            withContext(Dispatchers.IO) { client.fetchUsage(cookie) }
+            fetchWithRetry(cookie)
         } catch (e: Exception) {
             return handleRefreshFailure(e)
         }
@@ -123,6 +124,29 @@ class UsageRepository(
         _state.value = UsageUiState(isSignedIn = false, snapshot = null)
     }
 
+    /**
+     * Retries only the failures that are worth retrying.
+     *
+     * A phone that hops between Wi-Fi and cellular, or a Google edge node that
+     * answers 503, should not cost the user an "offline" badge: those clear up in
+     * under a second. Auth, rate limiting and protocol changes are decided by the
+     * server and would just burn quota, so they surface immediately.
+     */
+    private suspend fun fetchWithRetry(cookie: String): UsageSnapshot {
+        var attempt = 1
+        while (true) {
+            try {
+                return withContext(Dispatchers.IO) { client.fetchUsage(cookie) }
+            } catch (e: Exception) {
+                val kind = e.toErrorKind()
+                val retryable = kind == ErrorKind.NETWORK || kind == ErrorKind.SERVER
+                if (!retryable || attempt >= MAX_FETCH_ATTEMPTS) throw e
+                delay(RETRY_BASE_DELAY_MS * attempt)
+                attempt++
+            }
+        }
+    }
+
     private suspend fun handleRefreshFailure(error: Exception): RefreshOutcome {
         val kind = error.toErrorKind()
         val message = error.message?.takeIf { it.isNotBlank() } ?: "Unknown error"
@@ -152,5 +176,10 @@ class UsageRepository(
             errorMessage = stored?.message,
             errorDetail = stored?.detail,
         )
+    }
+
+    private companion object {
+        const val MAX_FETCH_ATTEMPTS = 3
+        const val RETRY_BASE_DELAY_MS = 600L
     }
 }

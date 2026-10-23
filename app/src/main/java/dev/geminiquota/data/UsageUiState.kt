@@ -17,8 +17,31 @@ data class UsageUiState(
         return nowEpochMs - snapshot.fetchedAtEpochMs > maxAgeMs
     }
 
+    /**
+     * The error worth mentioning next to the numbers, if any.
+     *
+     * A failed refresh is not the same event as stale data: if the numbers were
+     * fetched two minutes ago they are still true, and stamping "offline" on them
+     * just because the last poll hiccuped is noise. Likewise an expired session is
+     * already reported by its own state, so it is not an "offline" situation.
+     *
+     * @return the kind to surface, or null when the numbers speak for themselves.
+     */
+    fun offlineNote(
+        nowEpochMs: Long,
+        offlineAfterMs: Long = OFFLINE_NOTE_AFTER_MS,
+    ): ErrorKind? {
+        val kind = errorKind ?: return null
+        if (kind == ErrorKind.AUTH) return null
+        val fetchedAt = snapshot?.fetchedAtEpochMs ?: return null
+        return if (nowEpochMs - fetchedAt >= offlineAfterMs) kind else null
+    }
+
     companion object {
         const val DEFAULT_STALE_MS = 30 * 60 * 1_000L
+
+        /** How old the numbers must be before a failed refresh is worth flagging. */
+        const val OFFLINE_NOTE_AFTER_MS = 20 * 60 * 1_000L
     }
 }
 
