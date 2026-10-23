@@ -34,6 +34,9 @@ times are placeholders, not real usage.*
   evenly between three spacers, so the card always looks filled instead of showing a dead band. Light/dark
   aware.
 - Tap the body to open the dashboard; tap the refresh icon to fetch immediately.
+- Bars move instead of jumping: the dashboard counts the number up with the bar, cross-fades the colour
+  when the severity changes and gives the figure a short breath; the widget fakes the same curve with a
+  nine-frame ramp, since `RemoteViews` has no animators.
 - Limits are **compute-based**, so the widget reports percentages and reset times — not a fake
   "prompts remaining" count.
 

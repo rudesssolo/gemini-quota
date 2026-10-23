@@ -11,7 +11,11 @@ import dev.geminiquota.MainActivity
 import dev.geminiquota.R
 import dev.geminiquota.data.UsageUiState
 import dev.geminiquota.data.UsageWindow
+import dev.geminiquota.ui.Ramp
 import dev.geminiquota.ui.UsageFormat
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Builds the RemoteViews for every widget instance. Pure rendering only: the
@@ -22,6 +26,18 @@ object QuotaWidgetRenderer {
     private const val REQUEST_OPEN_APP = 100
     private const val REQUEST_REFRESH = 101
 
+    /** Ten frames over ~400 ms: the finest motion a launcher will render for a widget. */
+    private const val RAMP_STEPS = 9
+    private const val RAMP_STEP_MS = 42L
+
+    private val rampExecutor = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "quota-widget-ramp").apply { isDaemon = true }
+    }
+    private val ramping = AtomicBoolean(false)
+    private val generation = AtomicInteger(0)
+    private var lastPercents: Pair<Int, Int>? = null
+    private var lastFetchedAt: Long? = null
+
     fun updateAll(context: Context, state: UsageUiState) {
         val manager = AppWidgetManager.getInstance(context)
         val ids = manager.getAppWidgetIds(
@@ -30,7 +46,58 @@ object QuotaWidgetRenderer {
         if (ids.isEmpty()) return
 
         val views = buildViews(context, state)
-        ids.forEach { id -> manager.updateAppWidget(id, views) }
+
+        val target = state.percentPair()
+        val fetchedAt = state.snapshot?.fetchedAtEpochMs
+        val from = lastPercents
+        val isNewFetch = fetchedAt != null && fetchedAt != lastFetchedAt
+        lastPercents = target
+        lastFetchedAt = fetchedAt
+        val myGeneration = generation.incrementAndGet()
+
+        // Only a genuinely new set of numbers is worth animating: a state change
+        // that merely toggles the spinner should not replay the motion.
+        val animate = from != null && target != null && from != target && isNewFetch &&
+            ramping.compareAndSet(false, true)
+
+        if (!animate) {
+            ids.forEach { id -> manager.updateAppWidget(id, views) }
+            return
+        }
+
+        rampExecutor.execute {
+            try {
+                for (step in 1..RAMP_STEPS) {
+                    // A newer state arrived: drop this run, it already drew itself.
+                    if (generation.get() != myGeneration) return@execute
+
+                    val fraction = step / RAMP_STEPS.toFloat()
+                    val five = Ramp.valueAt(from.first, target.first, fraction)
+                    val weekly = Ramp.valueAt(from.second, target.second, fraction)
+                    views.setProgressBar(R.id.progress_five, 100, five, false)
+                    views.setProgressBar(R.id.progress_weekly, 100, weekly, false)
+                    views.setTextViewText(
+                        R.id.percent_five,
+                        context.getString(R.string.percent_format, five),
+                    )
+                    views.setTextViewText(
+                        R.id.percent_weekly,
+                        context.getString(R.string.percent_format, weekly),
+                    )
+                    ids.forEach { id -> manager.updateAppWidget(id, views) }
+                    if (step < RAMP_STEPS) Thread.sleep(RAMP_STEP_MS)
+                }
+            } catch (e: Exception) {
+                // A launcher that refuses rapid updates must not take the app down.
+            } finally {
+                ramping.set(false)
+            }
+        }
+    }
+
+    private fun UsageUiState.percentPair(): Pair<Int, Int>? {
+        val current = snapshot ?: return null
+        return (current.fiveHour?.usedPercent ?: 0) to (current.weekly?.usedPercent ?: 0)
     }
 
     fun buildViews(context: Context, state: UsageUiState): RemoteViews {

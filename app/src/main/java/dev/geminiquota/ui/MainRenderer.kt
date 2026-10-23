@@ -61,20 +61,29 @@ class MainRenderer(
         title: String,
     ) {
         card.cardTitle.text = title
-        card.cardPercent.text = UsageFormat.percentText(activity, window)
+
+        val targetColor = activity.getColor(
+            if (window != null) {
+                UsageFormat.severityColorRes(UsageFormat.severity(window))
+            } else {
+                R.color.text_secondary
+            },
+        )
+        card.cardProgress.visibility = View.VISIBLE
 
         if (window != null) {
-            card.cardPercent.setTextColor(
-                activity.getColor(
-                    UsageFormat.severityColorRes(UsageFormat.severity(window)),
-                ),
+            QuotaProgressAnimator.animate(
+                progressBar = card.cardProgress,
+                percentText = card.cardPercent,
+                targetPercent = window.usedPercent,
+                targetColor = targetColor,
+                format = { activity.getString(R.string.percent_format, it) },
             )
-            card.cardProgress.progress = window.usedPercent
-            card.cardProgress.visibility = View.VISIBLE
         } else {
-            card.cardPercent.setTextColor(activity.getColor(R.color.text_secondary))
+            QuotaProgressAnimator.cancel(card.cardProgress)
             card.cardProgress.progress = 0
-            card.cardProgress.visibility = View.VISIBLE
+            card.cardPercent.text = UsageFormat.percentText(activity, null)
+            card.cardPercent.setTextColor(targetColor)
         }
 
         // Absolute time, matching the widget: a countdown stops being true the
