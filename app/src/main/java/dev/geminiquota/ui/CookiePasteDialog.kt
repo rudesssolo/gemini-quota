@@ -3,15 +3,20 @@ package dev.geminiquota.ui
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.geminiquota.GeminiQuotaApp
 import dev.geminiquota.R
+import dev.geminiquota.data.ClaudeCookies
+import dev.geminiquota.data.ClaudeUsageClient
 import dev.geminiquota.data.ConnectResult
 import dev.geminiquota.data.CookieUtils
 import dev.geminiquota.databinding.DialogCookiePasteBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Fallback for accounts that Google refuses to sign in inside a WebView.
@@ -36,6 +41,7 @@ object CookiePasteDialog {
         binding.cookieInput.doAfterTextChanged { render(activity, binding) }
         binding.clipboardButton.setOnClickListener { pasteClipboard(activity, binding) }
         binding.helpButton.setOnClickListener { showHelp(activity) }
+        binding.probeButton.setOnClickListener { probeClaude(activity, binding) }
         render(activity, binding)
 
         dialog.setOnShowListener {
@@ -72,7 +78,18 @@ object CookiePasteDialog {
 
     /** Live feedback so a partial export is obvious before the request is sent. */
     private fun render(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
-        val summary = CookieUtils.summary(binding.cookieInput.text?.toString())
+        val raw = binding.cookieInput.text?.toString()
+
+        // A claude.ai session is not a Gemini session: offer a read-only probe
+        // instead of pretending the paste is invalid.
+        binding.probeButton.isVisible = ClaudeCookies.looksLikeClaudeSession(raw)
+        if (binding.probeButton.isVisible) {
+            binding.cookieStatus.setText(R.string.paste_probe_detected)
+            binding.cookieStatus.setTextColor(color(activity, R.color.accent))
+            return
+        }
+
+        val summary = CookieUtils.summary(raw)
         when {
             summary.isEmpty -> {
                 binding.cookieStatus.setText(R.string.paste_cookies_status_empty)
@@ -95,6 +112,41 @@ object CookiePasteDialog {
                 )
                 binding.cookieStatus.setTextColor(color(activity, R.color.severity_danger))
             }
+        }
+    }
+
+    /**
+     * Read-only check of a claude.ai session: one discovery call plus one usage
+     * call, printing only window names and percentages. Nothing is stored, so
+     * this is safe to run before Claude support is wired in.
+     */
+    private fun probeClaude(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
+        val raw = binding.cookieInput.text?.toString().orEmpty()
+        binding.probeButton.isEnabled = false
+        binding.cookieStatus.setText(R.string.paste_probe_running)
+        binding.cookieStatus.setTextColor(color(activity, R.color.text_secondary))
+
+        activity.lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching { ClaudeUsageClient().fetchUsage(raw) }
+            }
+            binding.probeButton.isEnabled = true
+            result.fold(
+                onSuccess = { page ->
+                    binding.cookieStatus.text = activity.getString(
+                        R.string.paste_probe_ok,
+                        QuotaPageFormat.summary(activity, page),
+                    )
+                    binding.cookieStatus.setTextColor(color(activity, R.color.severity_ok))
+                },
+                onFailure = { error ->
+                    binding.cookieStatus.text = activity.getString(
+                        R.string.paste_probe_failed,
+                        error.message ?: error.javaClass.simpleName,
+                    )
+                    binding.cookieStatus.setTextColor(color(activity, R.color.severity_danger))
+                },
+            )
         }
     }
 

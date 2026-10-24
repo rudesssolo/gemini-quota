@@ -83,6 +83,13 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        R.id.action_import -> {
+            // Also the entry point for refreshing an expired session without
+            // signing out, and for testing a claude.ai cookie.
+            CookiePasteDialog.show(this, prefill = ClipboardCookies.read(this))
+            true
+        }
+
         R.id.action_sign_out -> {
             confirmSignOut()
             true

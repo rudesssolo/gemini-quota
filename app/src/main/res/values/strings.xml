@@ -95,4 +95,13 @@
     <string name="import_help_button">How?</string>
     <string name="paste_clipboard_button">Paste from clipboard</string>
     <string name="paste_clipboard_empty">Nothing to paste — copy your cookies first.</string>
+    <string name="paste_probe_claude">Test Claude session</string>
+    <string name="paste_probe_detected">Claude sessionKey detected — test it here; nothing is saved yet.</string>
+    <string name="paste_probe_running">Testing against claude.ai…</string>
+    <string name="paste_probe_ok">Claude ok · %1$s</string>
+    <string name="paste_probe_failed">Claude test failed: %1$s</string>
+    <string name="probe_window_five">5-hour</string>
+    <string name="probe_window_weekly">Weekly</string>
+    <string name="probe_window_weekly_opus">Weekly Opus</string>
+    <string name="action_import_cookies">Import cookies…</string>
 </resources>

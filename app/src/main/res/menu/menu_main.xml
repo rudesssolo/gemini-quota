@@ -9,6 +9,11 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_import"
+        android:title="@string/action_import_cookies"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_sign_out"
         android:title="@string/action_sign_out"
         app:showAsAction="never" />
