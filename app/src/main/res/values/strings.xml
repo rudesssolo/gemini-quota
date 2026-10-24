@@ -57,9 +57,9 @@
     <string name="login_failed">Sign-in didn\'t complete. Try again, or paste cookies manually.</string>
     <string name="login_blocked">Sign in below. If Google says your browser “may not be secure”, tap Import — that is expected.</string>
     <string name="paste_cookies_title">Paste session cookies</string>
-    <string name="paste_cookies_body">Paste the cookie text you copied. A Cookie header, a “Copy as cURL” command, or a JSON cookie export all work.</string>
-    <string name="paste_cookies_hint">SID=…; HSID=…; __Secure-1PSID=…</string>
-    <string name="paste_cookies_status_empty">Supported: a Cookie header, “Copy as cURL”, or a JSON cookie export.</string>
+    <string name="paste_cookies_body">Paste either a Gemini session or a claude.ai sessionKey. A Cookie header, a “Copy as cURL” command or a Cookie-Editor JSON export all work.</string>
+    <string name="paste_cookies_hint">SID=…; __Secure-1PSID=…   ·   sessionKey=sk-ant-…</string>
+    <string name="paste_cookies_status_empty">Accepts Gemini session cookies or a claude.ai sessionKey — as a Cookie header, “Copy as cURL”, or a JSON export.</string>
     <string name="paste_cookies_status_ready">%1$d cookies found · session cookies: %2$s</string>
     <string name="paste_cookies_status_no_session">%1$d cookies found, but no Google session cookie. A “document.cookie” copy is missing the HttpOnly cookies (SID, __Secure-1PSID) — export from DevTools or Cookie-Editor instead.</string>
     <string name="paste_cookies_help_button">How do I get this?</string>
@@ -103,7 +103,9 @@
     <string name="probe_window_five">5-hour</string>
     <string name="probe_window_weekly">Weekly</string>
     <string name="probe_window_weekly_opus">Weekly Opus</string>
-    <string name="action_import_cookies">Import cookies…</string>
+    <string name="action_import_cookies">Import cookies (Gemini / Claude)…</string>
     <string name="paste_probe_no_windows">no usage windows reported for this plan</string>
     <string name="paste_cookies_status_unrecognized">%1$d cookies found, but none is a Google session or a claude.ai sessionKey: %2$s</string>
+    <string name="paste_probe_claude_empty">Paste a claude.ai export to test it — no sessionKey in this text yet.</string>
+    <string name="paste_cookies_status_wrong_site">This export is from %1$s. Open Cookie-Editor on the claude.ai tab (or the gemini.google.com one) and export again.</string>
 </resources>

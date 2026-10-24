@@ -81,6 +81,19 @@ class ClaudeCookiesTest {
     }
 
     @Test
+    fun `reports which site a json export came from`() {
+        val chatgpt = """[{"domain":".chatgpt.com","name":"oai-did","value":"x"}]"""
+        val claude = """[{"domain":".claude.ai","name":"sessionKey","value":"$token"}]"""
+        val wrapped = """{"cookies":[{"host":"example.org","name":"a","value":"b"}]}"""
+
+        assertEquals("chatgpt.com", ClaudeCookies.exportDomain(chatgpt))
+        assertEquals("claude.ai", ClaudeCookies.exportDomain(claude))
+        assertEquals("example.org", ClaudeCookies.exportDomain(wrapped))
+        assertNull(ClaudeCookies.exportDomain("Cookie: a=b"))
+        assertNull(ClaudeCookies.exportDomain(null))
+    }
+
+    @Test
     fun `a google cookie paste is not mistaken for a claude session`() {
         assertFalse(ClaudeCookies.looksLikeClaudeSession("SID=abc; __Secure-1PSID=xyz"))
         assertTrue(ClaudeCookies.looksLikeClaudeSession(token))

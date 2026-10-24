@@ -94,6 +94,22 @@ object ClaudeCookies {
         }.getOrNull()
     }
 
+    /**
+     * The site a JSON export came from, taken from its `domain`/`host` field.
+     * Used to tell the user "you exported from the wrong tab" — names only.
+     */
+    fun exportDomain(raw: String?): String? {
+        val text = raw?.trim().orEmpty()
+        val array = jsonArray(text) ?: return null
+        return (0 until array.length())
+            .mapNotNull { array.optJSONObject(it) }
+            .mapNotNull { entry ->
+                val domain = entry.field("domain").ifBlank { entry.field("host") }
+                domain.trim().trimStart('.').takeIf { it.isNotBlank() }
+            }
+            .firstOrNull()
+    }
+
     /** JSON exports use `name`/`value`; some tools capitalise them. */
     private fun JSONObject.field(key: String): String =
         optString(key).ifBlank { optString(key.replaceFirstChar { it.uppercase() }) }

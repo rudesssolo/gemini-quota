@@ -80,14 +80,17 @@ object CookiePasteDialog {
     private fun render(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
         val raw = binding.cookieInput.text?.toString()
 
-        // A claude.ai session is not a Gemini session: offer a read-only probe
-        // instead of pretending the paste is invalid.
-        binding.probeButton.isVisible = ClaudeCookies.looksLikeClaudeSession(raw)
-        if (binding.probeButton.isVisible) {
+        // The Claude entry point must be visible before pasting, otherwise the
+        // dialog looks like it only understands Gemini.
+        binding.probeButton.isVisible = true
+
+        if (ClaudeCookies.looksLikeClaudeSession(raw)) {
             binding.cookieStatus.setText(R.string.paste_probe_detected)
             binding.cookieStatus.setTextColor(color(activity, R.color.accent))
+            binding.probeButton.isEnabled = true
             return
         }
+        binding.probeButton.isEnabled = false
 
         val summary = CookieUtils.summary(raw)
         when {
@@ -109,14 +112,21 @@ object CookiePasteDialog {
                 // Name the cookies we did see: "it did not recognise my cookie"
                 // is otherwise impossible to diagnose from the phone.
                 val names = ClaudeCookies.cookieNames(raw)
-                binding.cookieStatus.text = if (names.isEmpty()) {
-                    activity.getString(R.string.paste_cookies_status_no_session, summary.count)
-                } else {
-                    activity.getString(
-                        R.string.paste_cookies_status_unrecognized,
-                        summary.count,
-                        names.joinToString(", "),
-                    )
+                val site = ClaudeCookies.exportDomain(raw)
+                binding.cookieStatus.text = when {
+                    site != null && !site.contains("claude", true) &&
+                        !site.contains("google", true) ->
+                        activity.getString(R.string.paste_cookies_status_wrong_site, site)
+
+                    names.isEmpty() ->
+                        activity.getString(R.string.paste_cookies_status_no_session, summary.count)
+
+                    else ->
+                        activity.getString(
+                            R.string.paste_cookies_status_unrecognized,
+                            summary.count,
+                            names.joinToString(", "),
+                        )
                 }
                 binding.cookieStatus.setTextColor(color(activity, R.color.severity_danger))
             }
