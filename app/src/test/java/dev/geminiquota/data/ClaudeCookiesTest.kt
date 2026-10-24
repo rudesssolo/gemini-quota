@@ -50,6 +50,37 @@ class ClaudeCookiesTest {
     }
 
     @Test
+    fun `accepts a cookies wrapper export`() {
+        val raw = """{"cookies":[{"name":"sessionKey","value":"$token"}]}"""
+        assertEquals("sessionKey=$token", ClaudeCookies.normalize(raw))
+    }
+
+    @Test
+    fun `lists the cookie names it found, never the values`() {
+        val raw = """
+            [
+              {"name":"__cf_bm","value":"secret-1"},
+              {"name":"intercom-device-id","value":"secret-2"},
+              {"name":"lastActiveOrg","value":"secret-3"}
+            ]
+        """.trimIndent()
+        assertEquals(
+            listOf("__cf_bm", "intercom-device-id", "lastActiveOrg"),
+            ClaudeCookies.cookieNames(raw),
+        )
+        assertFalse(ClaudeCookies.cookieNames(raw).any { it.contains("secret") })
+    }
+
+    @Test
+    fun `lists names from a plain header string`() {
+        val raw = "Cookie: __cf_bm=1; lastActiveOrg=xyz; intercom-device-id=2"
+        assertEquals(
+            listOf("__cf_bm", "lastActiveOrg", "intercom-device-id"),
+            ClaudeCookies.cookieNames(raw),
+        )
+    }
+
+    @Test
     fun `a google cookie paste is not mistaken for a claude session`() {
         assertFalse(ClaudeCookies.looksLikeClaudeSession("SID=abc; __Secure-1PSID=xyz"))
         assertTrue(ClaudeCookies.looksLikeClaudeSession(token))

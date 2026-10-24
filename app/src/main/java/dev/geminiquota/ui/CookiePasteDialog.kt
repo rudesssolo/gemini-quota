@@ -106,10 +106,18 @@ object CookiePasteDialog {
             }
 
             else -> {
-                binding.cookieStatus.text = activity.getString(
-                    R.string.paste_cookies_status_no_session,
-                    summary.count,
-                )
+                // Name the cookies we did see: "it did not recognise my cookie"
+                // is otherwise impossible to diagnose from the phone.
+                val names = ClaudeCookies.cookieNames(raw)
+                binding.cookieStatus.text = if (names.isEmpty()) {
+                    activity.getString(R.string.paste_cookies_status_no_session, summary.count)
+                } else {
+                    activity.getString(
+                        R.string.paste_cookies_status_unrecognized,
+                        summary.count,
+                        names.joinToString(", "),
+                    )
+                }
                 binding.cookieStatus.setTextColor(color(activity, R.color.severity_danger))
             }
         }

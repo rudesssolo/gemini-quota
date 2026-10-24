@@ -44,18 +44,62 @@ object ClaudeCookies {
         return null
     }
 
-    private fun jsonSessionKey(text: String): String? {
+    private fun jsonSessionKey(text: String): String? =
+        jsonArray(text)
+            ?.let { array ->
+                (0 until array.length())
+                    .mapNotNull { array.optJSONObject(it) }
+                    .firstOrNull { it.field("name").equals(COOKIE_NAME, ignoreCase = true) }
+                    ?.field("value")
+                    ?.takeIf { it.isNotBlank() }
+            }
+
+    /**
+     * Cookie names present in the paste, for the dialog's diagnostics. Values are
+     * never returned, so this is safe to show on screen.
+     */
+    fun cookieNames(raw: String?): List<String> {
+        val text = raw?.trim().orEmpty()
+        if (text.isEmpty()) return emptyList()
+
+        jsonArray(text)?.let { array ->
+            return (0 until array.length())
+                .mapNotNull { array.optJSONObject(it)?.field("name") }
+                .filter { it.isNotBlank() }
+                .distinct()
+                .take(MAX_DIAGNOSTIC_NAMES)
+        }
+
+        val marker = text.indexOf("cookie:", ignoreCase = true)
+        val body = if (marker >= 0) text.substring(marker + "cookie:".length).trim() else text
+        return body.split(';', '\n', '\r')
+            .mapNotNull { part ->
+                val name = part.substringBefore('=', "").trim().trim('"', '\'', ' ')
+                name.takeIf { it.isNotEmpty() && PLAIN_NAME.matches(it) }
+            }
+            .distinct()
+            .take(MAX_DIAGNOSTIC_NAMES)
+    }
+
+    /** Accepts a bare array, a single cookie object, or a {"cookies": [...]} wrapper. */
+    private fun jsonArray(text: String): JSONArray? {
         if (!text.startsWith("[") && !text.startsWith("{")) return null
         return runCatching {
-            val array = if (text.startsWith("[")) JSONArray(text) else JSONArray().put(JSONObject(text))
-            (0 until array.length())
-                .mapNotNull { array.optJSONObject(it) }
-                .firstOrNull {
-                    it.optString("name").equals(COOKIE_NAME, ignoreCase = true)
-                }
-                ?.optString("value")
-                ?.takeIf { it.isNotBlank() }
+            if (text.startsWith("[")) {
+                JSONArray(text)
+            } else {
+                val obj = JSONObject(text)
+                obj.optJSONArray("cookies") ?: JSONArray().put(obj)
+            }
         }.getOrNull()
     }
+
+    /** JSON exports use `name`/`value`; some tools capitalise them. */
+    private fun JSONObject.field(key: String): String =
+        optString(key).ifBlank { optString(key.replaceFirstChar { it.uppercase() }) }
+
+    private const val MAX_DIAGNOSTIC_NAMES = 8
+
+    private val PLAIN_NAME = Regex("^[A-Za-z0-9_.-]+$")
 
 }
