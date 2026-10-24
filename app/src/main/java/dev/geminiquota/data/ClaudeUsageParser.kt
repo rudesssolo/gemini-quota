@@ -1,5 +1,6 @@
 package dev.geminiquota.data
 
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.time.Instant
@@ -21,6 +22,8 @@ object ClaudeUsageParser {
 
     const val SOURCE = "CLAUDE_WEB"
 
+    private const val MAX_SHAPE_CHARS = 160
+
     private const val FIVE_HOUR = "five_hour"
     private const val SEVEN_DAY = "seven_day"
     private const val SEVEN_DAY_OPUS = "seven_day_opus"
@@ -35,6 +38,26 @@ object ClaudeUsageParser {
         "seven_day_cowork",
         "extra_usage",
     )
+
+    /**
+     * A value-free description of the payload's structure.
+     *
+     * When a plan reports no windows we need to tell two cases apart: every key
+     * present but `null` (the plan publishes nothing) or the keys missing (the
+     * endpoint moved on). Keys and types only — never a value.
+     */
+    fun shape(body: String): String {
+        val json = runCatching { JSONObject(body) }.getOrNull() ?: return "not-json"
+        val parts = json.keys().asSequence().sorted().map { key ->
+            when (val value = json.opt(key)) {
+                null, JSONObject.NULL -> "$key=null"
+                is JSONObject -> "$key{" + value.keys().asSequence().sorted().joinToString(",") + "}"
+                is JSONArray -> "$key[len=${value.length()}]"
+                else -> "$key=${value.javaClass.simpleName.lowercase()}"
+            }
+        }.toList()
+        return parts.joinToString(", ").take(MAX_SHAPE_CHARS)
+    }
 
     fun parse(body: String, nowEpochMs: Long): QuotaPage {
         val json = try {

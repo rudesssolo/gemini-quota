@@ -141,8 +141,8 @@ class UsageRepository(
                 "The pasted text did not contain a claude.ai sessionKey.",
             )
 
-        val page = try {
-            withContext(Dispatchers.IO) { claudeClient.fetchUsage(cookie) }
+        val usage = try {
+            withContext(Dispatchers.IO) { claudeClient.fetchUsageDetailed(cookie) }
         } catch (e: Exception) {
             val kind = e.toErrorKind()
             val message = e.message?.takeIf { it.isNotBlank() } ?: "Connection failed"
@@ -155,11 +155,11 @@ class UsageRepository(
 
         withContext(Dispatchers.IO) {
             store.saveCookie(cookie, ProviderId.CLAUDE)
-            store.savePage(page)
+            store.savePage(usage.page)
             store.clearError(ProviderId.CLAUDE)
         }
-        _claudePage.value = page
-        return ClaudeConnectResult.Success(page)
+        _claudePage.value = usage.page
+        return ClaudeConnectResult.Success(usage.page, usage.shape)
     }
 
     /**

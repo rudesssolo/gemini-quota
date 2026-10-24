@@ -107,5 +107,6 @@
     <string name="paste_connect_claude">Connect Claude</string>
     <string name="paste_status_claude">claude.ai sessionKey found. Connect links this account; your Gemini login stays as it is.</string>
     <string name="claude_connect_success">Claude connected · %1$s</string>
-    <string name="paste_no_windows">no usage windows reported for this plan</string>
+    <string name="paste_plan_unknown">plan unknown</string>
+    <string name="paste_claude_no_windows">Claude linked (%1$s), but this plan publishes no limits. Payload: %2$s</string>
 </resources>

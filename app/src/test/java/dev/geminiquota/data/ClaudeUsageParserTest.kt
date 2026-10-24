@@ -23,6 +23,22 @@ class ClaudeUsageParserTest {
     """.trimIndent()
 
     @Test
+    fun `shape reports keys and types without values`() {
+        val body = """{"five_hour":null,"seven_day":{"utilization":42.0,"resets_at":"2026-10-27T10:10:00Z"},"extra_usage":{"is_enabled":false}}"""
+
+        assertEquals(
+            "extra_usage{is_enabled}, five_hour=null, seven_day{resets_at,utilization}",
+            ClaudeUsageParser.shape(body),
+        )
+        assertTrue(ClaudeUsageParser.shape(body).none { it.isDigit() })
+    }
+
+    @Test
+    fun `shape survives a non json body`() {
+        assertEquals("not-json", ClaudeUsageParser.shape("<html>nope</html>"))
+    }
+
+    @Test
     fun `parses all reported windows`() {
         val page = ClaudeUsageParser.parse(body, now)
 

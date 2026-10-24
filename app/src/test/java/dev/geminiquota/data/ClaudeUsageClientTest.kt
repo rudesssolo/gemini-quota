@@ -39,6 +39,58 @@ class ClaudeUsageClientTest {
 
     private fun client() = ClaudeUsageClient(baseUrl = server.url("/"), clock = { clock })
 
+    private val freeBody = """{"five_hour":null,"seven_day":null,"seven_day_opus":null,"extra_usage":null}"""
+
+    private val bootstrapFree = """
+        {"account":{"memberships":[{"organization":{
+            "uuid":"org-1","capabilities":[],"rate_limit_tier":"default_claude_ai"}}]}}
+    """.trimIndent()
+
+    @Test
+    fun `a free plan answers with every window null`() {
+        server.enqueue(MockResponse().setBody(orgsBody))
+        server.enqueue(MockResponse().setBody(freeBody))
+        server.enqueue(MockResponse().setBody(bootstrapFree))
+
+        val usage = client().fetchUsageDetailed(token)
+
+        assertTrue(usage.page.windows.isEmpty())
+        assertEquals("Free", usage.page.tier)
+        assertEquals(
+            "extra_usage=null, five_hour=null, seven_day=null, seven_day_opus=null",
+            usage.shape,
+        )
+
+        server.takeRequest() // /api/organizations
+        server.takeRequest() // /usage
+        assertEquals(
+            "/api/bootstrap/org-1/app_start?statsig_hashing_algorithm=djb2",
+            server.takeRequest().path,
+        )
+    }
+
+    @Test
+    fun `a plan with windows never asks for the bootstrap`() {
+        server.enqueue(MockResponse().setBody(orgsBody))
+        server.enqueue(MockResponse().setBody(usageBody))
+
+        client().fetchUsage(token)
+
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun `a failing bootstrap leaves the tier alone instead of failing the fetch`() {
+        server.enqueue(MockResponse().setBody(orgsBody))
+        server.enqueue(MockResponse().setBody(freeBody))
+        server.enqueue(MockResponse().setResponseCode(500))
+
+        val usage = client().fetchUsageDetailed(token)
+
+        assertTrue(usage.page.windows.isEmpty())
+        assertEquals(null, usage.page.tier)
+    }
+
     @Test
     fun `forwards every claude cookie so cloudflare sees the browser state`() {
         server.enqueue(MockResponse().setBody(orgsBody))

@@ -62,12 +62,25 @@ object CookiePasteDialog {
                     when (PasteRouting.target(raw)) {
                         ProviderId.CLAUDE -> when (val result = repository.connectClaude(raw)) {
                             is ClaudeConnectResult.Success -> {
-                                Toast.makeText(
-                                    activity,
-                                    claudeToast(activity, result.page),
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                                dialog.dismiss()
+                                if (result.page.hasAnyWindow) {
+                                    Toast.makeText(
+                                        activity,
+                                        claudeToast(activity, result.page),
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                                    dialog.dismiss()
+                                } else {
+                                    // The session works but the plan publishes nothing:
+                                    // say so here instead of leaving a blank dashboard.
+                                    binding.cookieStatus.text = activity.getString(
+                                        R.string.paste_claude_no_windows,
+                                        result.page.tier
+                                            ?: activity.getString(R.string.paste_plan_unknown),
+                                        result.shape,
+                                    )
+                                    binding.cookieStatus.setTextColor(color(activity, R.color.severity_warn))
+                                    positive.isEnabled = true
+                                }
                                 onClaudeConnected(result.page)
                             }
 
@@ -172,14 +185,8 @@ object CookiePasteDialog {
     }
 
     /** `Claude connected · 5-hour 42% · Weekly 24%` — the only place it shows, for now. */
-    private fun claudeToast(activity: AppCompatActivity, page: QuotaPage): CharSequence {
-        val detail = if (page.windows.isEmpty()) {
-            activity.getString(R.string.paste_no_windows)
-        } else {
-            QuotaPageFormat.summary(activity, page)
-        }
-        return activity.getString(R.string.claude_connect_success, detail)
-    }
+    private fun claudeToast(activity: AppCompatActivity, page: QuotaPage): CharSequence =
+        activity.getString(R.string.claude_connect_success, QuotaPageFormat.summary(activity, page))
 
     /** Copies a value-free description of the paste, for support requests. */
     private fun copyReport(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
