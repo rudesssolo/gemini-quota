@@ -65,21 +65,21 @@ class GraphqlUsageParserTest {
     @Test
     fun `null viewer means the session expired`() {
         val body = """[{"data":{"viewer":null}}]"""
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             GraphqlUsageParser.parse(body, fetchedAt)
         }
     }
 
     @Test
     fun `empty body means the session expired`() {
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             GraphqlUsageParser.parse("", fetchedAt)
         }
     }
 
     @Test
     fun `html body means a sign-in page`() {
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             GraphqlUsageParser.parse("<!doctype html><html></html>", fetchedAt)
         }
     }
@@ -87,7 +87,7 @@ class GraphqlUsageParserTest {
     @Test
     fun `missing usage info is a protocol change`() {
         val body = """[{"data":{"viewer":{"rpcs":{}}}}]"""
-        val error = assertThrows(GeminiUsageException.ProtocolChanged::class.java) {
+        val error = assertThrows(UsageException.ProtocolChanged::class.java) {
             GraphqlUsageParser.parse(body, fetchedAt)
         }
         assertEquals("Gemini usage response had no getUsageInfo", error.message)
@@ -100,14 +100,14 @@ class GraphqlUsageParserTest {
               {"poolType":"GXU_SOMETHING_NEW","percentageUsed":0.2}
             ]}}}}}]
         """.trimIndent()
-        assertThrows(GeminiUsageException.ProtocolChanged::class.java) {
+        assertThrows(UsageException.ProtocolChanged::class.java) {
             GraphqlUsageParser.parse(body, fetchedAt)
         }
     }
 
     @Test
     fun `invalid json is a protocol change with a snippet`() {
-        val error = assertThrows(GeminiUsageException.ProtocolChanged::class.java) {
+        val error = assertThrows(UsageException.ProtocolChanged::class.java) {
             GraphqlUsageParser.parse("not json at all", fetchedAt)
         }
         assertEquals("Gemini usage response was not valid JSON", error.message)

@@ -11,10 +11,10 @@ enum class ErrorKind {
 }
 
 internal fun Throwable.toErrorKind(): ErrorKind = when (this) {
-    is GeminiUsageException.AuthRequired -> ErrorKind.AUTH
-    is GeminiUsageException.RateLimited -> ErrorKind.RATE_LIMITED
-    is GeminiUsageException.Network -> ErrorKind.NETWORK
-    is GeminiUsageException.Server -> ErrorKind.SERVER
-    is GeminiUsageException.ProtocolChanged -> ErrorKind.PROTOCOL
+    is UsageException.AuthRequired -> ErrorKind.AUTH
+    is UsageException.RateLimited -> ErrorKind.RATE_LIMITED
+    is UsageException.Network -> ErrorKind.NETWORK
+    is UsageException.Server -> ErrorKind.SERVER
+    is UsageException.ProtocolChanged -> ErrorKind.PROTOCOL
     else -> ErrorKind.UNKNOWN
 }

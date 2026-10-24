@@ -93,7 +93,7 @@ class UsageRepository(
         } catch (e: Exception) {
             val kind = e.toErrorKind()
             val message = e.message?.takeIf { it.isNotBlank() } ?: "Connection failed"
-            val detail = (e as? GeminiUsageException.ProtocolChanged)?.detail
+            val detail = (e as? UsageException.ProtocolChanged)?.detail
             withContext(Dispatchers.IO) { store.saveError(kind, message, detail) }
             _state.update {
                 it.copy(
@@ -150,7 +150,7 @@ class UsageRepository(
     private suspend fun handleRefreshFailure(error: Exception): RefreshOutcome {
         val kind = error.toErrorKind()
         val message = error.message?.takeIf { it.isNotBlank() } ?: "Unknown error"
-        val detail = (error as? GeminiUsageException.ProtocolChanged)?.detail
+        val detail = (error as? UsageException.ProtocolChanged)?.detail
         withContext(Dispatchers.IO) { store.saveError(kind, message, detail) }
         _state.update {
             it.copy(

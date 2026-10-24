@@ -35,7 +35,7 @@ class BatchexecuteUsageParserTest {
 
     @Test
     fun `missing rpc frame is a protocol change`() {
-        assertThrows(GeminiUsageException.ProtocolChanged::class.java) {
+        assertThrows(UsageException.ProtocolChanged::class.java) {
             BatchexecuteUsageParser.parse("""[["wrb.fr","otherRpc","[]"]]""", fetchedAt)
         }
     }
@@ -43,7 +43,7 @@ class BatchexecuteUsageParserTest {
     @Test
     fun `missing rows is a protocol change`() {
         val body = """[["wrb.fr","jSf9Qc","[null]",null,null,null,"generic"]]"""
-        assertThrows(GeminiUsageException.ProtocolChanged::class.java) {
+        assertThrows(UsageException.ProtocolChanged::class.java) {
             BatchexecuteUsageParser.parse(body, fetchedAt)
         }
     }
@@ -51,7 +51,7 @@ class BatchexecuteUsageParserTest {
     @Test
     fun `rows without known types are a protocol change`() {
         val body = """[["wrb.fr","jSf9Qc","[null,[[0,0.5,7,[]]]]",null,null,null,"generic"]]"""
-        assertThrows(GeminiUsageException.ProtocolChanged::class.java) {
+        assertThrows(UsageException.ProtocolChanged::class.java) {
             BatchexecuteUsageParser.parse(body, fetchedAt)
         }
     }

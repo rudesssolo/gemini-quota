@@ -92,7 +92,7 @@ class GeminiUsageClientTest {
     fun `empty 200 is treated as an expired session`() {
         server.enqueue(MockResponse().setResponseCode(200).setBody(""))
 
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             client().fetchUsage(cookie)
         }
         assertEquals(1, server.requestCount)
@@ -102,7 +102,7 @@ class GeminiUsageClientTest {
     fun `html 200 is treated as an expired session`() {
         server.enqueue(MockResponse().setResponseCode(200).setBody("<html>Sign in</html>"))
 
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             client().fetchUsage(cookie)
         }
     }
@@ -110,7 +110,7 @@ class GeminiUsageClientTest {
     @Test
     fun `401 is an auth failure`() {
         server.enqueue(MockResponse().setResponseCode(401))
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             client().fetchUsage(cookie)
         }
     }
@@ -118,7 +118,7 @@ class GeminiUsageClientTest {
     @Test
     fun `429 carries retry after`() {
         server.enqueue(MockResponse().setResponseCode(429).setHeader("Retry-After", "120"))
-        val error = assertThrows(GeminiUsageException.RateLimited::class.java) {
+        val error = assertThrows(UsageException.RateLimited::class.java) {
             client().fetchUsage(cookie)
         }
         assertEquals(120L, error.retryAfterSeconds)
@@ -127,7 +127,7 @@ class GeminiUsageClientTest {
     @Test
     fun `5xx is a server failure`() {
         server.enqueue(MockResponse().setResponseCode(503))
-        val error = assertThrows(GeminiUsageException.Server::class.java) {
+        val error = assertThrows(UsageException.Server::class.java) {
             client().fetchUsage(cookie)
         }
         assertEquals(503, error.statusCode)
@@ -169,14 +169,14 @@ class GeminiUsageClientTest {
         )
         server.enqueue(MockResponse().setResponseCode(200).setBody("<html>Sign in</html>"))
 
-        assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        assertThrows(UsageException.AuthRequired::class.java) {
             client().fetchUsage(cookie)
         }
     }
 
     @Test
     fun `rejects a cookie without a google session`() {
-        val error = assertThrows(GeminiUsageException.AuthRequired::class.java) {
+        val error = assertThrows(UsageException.AuthRequired::class.java) {
             client().fetchUsage("foo=bar")
         }
         assertNotNull(error.message)
@@ -186,7 +186,7 @@ class GeminiUsageClientTest {
     @Test
     fun `network failures are wrapped`() {
         server.shutdown()
-        assertThrows(GeminiUsageException.Network::class.java) {
+        assertThrows(UsageException.Network::class.java) {
             client().fetchUsage(cookie)
         }
     }

@@ -5,9 +5,6 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.IOException
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 
 /**
@@ -30,14 +27,14 @@ class GeminiUsageClient(
     fun fetchUsage(cookieHeader: String): UsageSnapshot {
         val cookie = CookieUtils.normalize(cookieHeader)
         if (!CookieUtils.looksLikeGeminiSession(cookie)) {
-            throw GeminiUsageException.AuthRequired("No Gemini session cookies were supplied")
+            throw UsageException.AuthRequired("No Gemini session cookies were supplied")
         }
 
         val now = clock()
-        var graphqlFailure: GeminiUsageException.ProtocolChanged? = null
+        var graphqlFailure: UsageException.ProtocolChanged? = null
         try {
             return fetchGraphql(cookie, now)
-        } catch (e: GeminiUsageException.ProtocolChanged) {
+        } catch (e: UsageException.ProtocolChanged) {
             graphqlFailure = e
         }
         return fetchBatchexecute(cookie, now, graphqlFailure)
@@ -60,15 +57,15 @@ class GeminiUsageClient(
             .header("User-Agent", DESKTOP_USER_AGENT)
             .build()
 
-        val result = execute(request)
-        requireSuccess(result, "Gemini usage request")
+        val result = httpClient.execute(request, clock)
+        result.requireSuccess("Gemini usage request")
         return GraphqlUsageParser.parse(result.body, now)
     }
 
     private fun fetchBatchexecute(
         cookie: String,
         now: Long,
-        graphqlFailure: GeminiUsageException.ProtocolChanged?,
+        graphqlFailure: UsageException.ProtocolChanged?,
     ): UsageSnapshot {
         val pageRequest = Request.Builder()
             .url(usageUrl())
@@ -79,16 +76,16 @@ class GeminiUsageClient(
             .header("User-Agent", DESKTOP_USER_AGENT)
             .build()
 
-        val page = execute(pageRequest)
-        requireSuccess(page, "Gemini usage page")
+        val page = httpClient.execute(pageRequest, clock)
+        page.requireSuccess("Gemini usage page")
         if (page.finalHost != null && page.finalHost != baseUrl.host) {
-            throw GeminiUsageException.AuthRequired(
+            throw UsageException.AuthRequired(
                 "Gemini redirected to ${page.finalHost}; the session has expired",
             )
         }
 
         val tokens = WizTokenExtractor.extract(page.body)
-            ?: throw GeminiUsageException.AuthRequired(
+            ?: throw UsageException.AuthRequired(
                 "Gemini usage page had no session token; sign in again",
             )
 
@@ -123,17 +120,17 @@ class GeminiUsageClient(
             .header("User-Agent", DESKTOP_USER_AGENT)
             .build()
 
-        val result = execute(request)
-        requireSuccess(result, "Gemini usage RPC")
+        val result = httpClient.execute(request, clock)
+        result.requireSuccess("Gemini usage RPC")
         if (result.body.trimStart().startsWith("<")) {
-            throw GeminiUsageException.AuthRequired("Gemini returned a sign-in page for the usage RPC")
+            throw UsageException.AuthRequired("Gemini returned a sign-in page for the usage RPC")
         }
 
         return try {
             BatchexecuteUsageParser.parse(result.body, now)
-        } catch (e: GeminiUsageException.ProtocolChanged) {
+        } catch (e: UsageException.ProtocolChanged) {
             if (graphqlFailure != null) {
-                throw GeminiUsageException.ProtocolChanged(
+                throw UsageException.ProtocolChanged(
                     message = "${e.message}; GraphQL also failed: ${graphqlFailure.message}",
                     detail = e.detail ?: graphqlFailure.detail,
                 )
@@ -144,58 +141,8 @@ class GeminiUsageClient(
 
     private fun usageUrl(): HttpUrl = baseUrl.newBuilder().addPathSegment("usage").build()
 
-    private fun requireSuccess(result: HttpResult, label: String) {
-        when {
-            result.code == 401 || result.code == 403 ->
-                throw GeminiUsageException.AuthRequired(
-                    "$label rejected the session (HTTP ${result.code})",
-                )
-
-            result.code == 429 -> throw GeminiUsageException.RateLimited(result.retryAfterSeconds)
-            result.code >= 500 -> throw GeminiUsageException.Server(result.code)
-            result.code !in 200..299 -> throw GeminiUsageException.Server(result.code)
-        }
-    }
-
-    private fun execute(request: Request): HttpResult {
-        try {
-            httpClient.newCall(request).execute().use { response ->
-                return HttpResult(
-                    code = response.code,
-                    body = response.body?.string().orEmpty(),
-                    retryAfterSeconds = parseRetryAfter(response.header("Retry-After")),
-                    finalHost = response.request.url.host,
-                )
-            }
-        } catch (e: IOException) {
-            throw GeminiUsageException.Network(e)
-        }
-    }
-
-    private fun parseRetryAfter(value: String?): Long? {
-        if (value.isNullOrBlank()) return null
-        value.trim().toLongOrNull()?.let { return it.coerceAtLeast(0) }
-        return try {
-            val at = ZonedDateTime.parse(value.trim(), DateTimeFormatter.RFC_1123_DATE_TIME)
-                .toInstant()
-                .toEpochMilli()
-            ((at - clock()) / 1_000L).coerceAtLeast(0)
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private data class HttpResult(
-        val code: Int,
-        val body: String,
-        val retryAfterSeconds: Long?,
-        val finalHost: String?,
-    )
-
     companion object {
-        const val DESKTOP_USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+        const val DESKTOP_USER_AGENT = USER_AGENT
 
         private const val ACCEPT_LANGUAGE = "en-US,en;q=0.9"
 

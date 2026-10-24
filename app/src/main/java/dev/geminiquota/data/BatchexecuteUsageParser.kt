@@ -34,7 +34,7 @@ object BatchexecuteUsageParser {
         }
 
         if (payloadText.isNullOrBlank()) {
-            throw GeminiUsageException.ProtocolChanged(
+            throw UsageException.ProtocolChanged(
                 "Gemini usage RPC response was missing",
                 responseSnippet(body),
             )
@@ -43,14 +43,14 @@ object BatchexecuteUsageParser {
         val payload = try {
             JSONArray(payloadText)
         } catch (e: JSONException) {
-            throw GeminiUsageException.ProtocolChanged(
+            throw UsageException.ProtocolChanged(
                 "Gemini usage RPC payload was not a JSON array",
                 responseSnippet(payloadText),
             )
         }
 
         val rows = payload.optJSONArray(1)
-            ?: throw GeminiUsageException.ProtocolChanged(
+            ?: throw UsageException.ProtocolChanged(
                 "Gemini usage RPC payload had no rows",
                 responseSnippet(payloadText),
             )
@@ -73,7 +73,7 @@ object BatchexecuteUsageParser {
         }
 
         if (fiveHour == null && weekly == null) {
-            throw GeminiUsageException.ProtocolChanged(
+            throw UsageException.ProtocolChanged(
                 "Gemini usage RPC did not report any usage windows",
                 responseSnippet(body),
             )

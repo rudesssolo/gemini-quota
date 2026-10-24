@@ -29,10 +29,10 @@ object GraphqlUsageParser {
     fun parse(body: String, fetchedAtEpochMs: Long): UsageSnapshot {
         val trimmed = body.trim()
         if (trimmed.isEmpty()) {
-            throw GeminiUsageException.AuthRequired("Gemini returned an empty usage response")
+            throw UsageException.AuthRequired("Gemini returned an empty usage response")
         }
         if (trimmed.startsWith("<")) {
-            throw GeminiUsageException.AuthRequired("Gemini returned a sign-in page instead of usage data")
+            throw UsageException.AuthRequired("Gemini returned a sign-in page instead of usage data")
         }
 
         // Some Google endpoints prefix JSON with an XSSI guard.
@@ -40,41 +40,41 @@ object GraphqlUsageParser {
         val root = try {
             JSONTokener(jsonText).nextValue()
         } catch (e: JSONException) {
-            throw GeminiUsageException.ProtocolChanged(
+            throw UsageException.ProtocolChanged(
                 "Gemini usage response was not valid JSON",
                 responseSnippet(trimmed),
             )
         }
 
         if (root !is JSONObject && root !is JSONArray) {
-            throw GeminiUsageException.ProtocolChanged(
+            throw UsageException.ProtocolChanged(
                 "Gemini usage response was not valid JSON",
                 responseSnippet(trimmed),
             )
         }
 
         val data = findDataWithViewer(root)
-            ?: throw GeminiUsageException.ProtocolChanged(
+            ?: throw UsageException.ProtocolChanged(
                 "Gemini usage response had no viewer section",
                 responseSnippet(trimmed),
             )
 
         if (!data.has("viewer") || data.isNull("viewer")) {
-            throw GeminiUsageException.AuthRequired("Gemini session is not signed in")
+            throw UsageException.AuthRequired("Gemini session is not signed in")
         }
         val viewer = data.optJSONObject("viewer")
-            ?: throw GeminiUsageException.ProtocolChanged(
+            ?: throw UsageException.ProtocolChanged(
                 "Gemini viewer section had an unexpected type",
                 responseSnippet(trimmed),
             )
 
         val usage = viewer.optJSONObject("rpcs")?.optJSONObject("getUsageInfo")
-            ?: throw GeminiUsageException.ProtocolChanged(
+            ?: throw UsageException.ProtocolChanged(
                 "Gemini usage response had no getUsageInfo",
                 responseSnippet(trimmed),
             )
         val pools = usage.optJSONArray("pools")
-            ?: throw GeminiUsageException.ProtocolChanged(
+            ?: throw UsageException.ProtocolChanged(
                 "Gemini usage response had no pools",
                 responseSnippet(trimmed),
             )
@@ -82,7 +82,7 @@ object GraphqlUsageParser {
         val fiveHour = findPool(pools, FIVE_HOUR_POOL)
         val weekly = findPool(pools, WEEKLY_POOL)
         if (fiveHour == null && weekly == null) {
-            throw GeminiUsageException.ProtocolChanged(
+            throw UsageException.ProtocolChanged(
                 "No Gemini usage windows were reported for this account",
                 responseSnippet(trimmed),
             )
