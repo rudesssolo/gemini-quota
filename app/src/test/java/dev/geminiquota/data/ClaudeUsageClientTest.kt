@@ -40,6 +40,19 @@ class ClaudeUsageClientTest {
     private fun client() = ClaudeUsageClient(baseUrl = server.url("/"), clock = { clock })
 
     @Test
+    fun `forwards every claude cookie so cloudflare sees the browser state`() {
+        server.enqueue(MockResponse().setBody(orgsBody))
+        server.enqueue(MockResponse().setBody(usageBody))
+
+        client().fetchUsage("sessionKey=$token; __cf_bm=cf-value; lastActiveOrg=org-1")
+
+        assertEquals(
+            "sessionKey=$token; __cf_bm=cf-value; lastActiveOrg=org-1",
+            server.takeRequest().getHeader("Cookie"),
+        )
+    }
+
+    @Test
     fun `discovers the organization then reads usage`() {
         server.enqueue(MockResponse().setBody(orgsBody))
         server.enqueue(MockResponse().setBody(usageBody))

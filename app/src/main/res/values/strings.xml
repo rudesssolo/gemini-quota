@@ -67,7 +67,7 @@
     <string name="paste_cookies_help_body">Google blocks sign-in inside apps, so the app needs the cookies from a browser where you are already signed in.\n\nOn this phone — no computer needed\n1. Install Firefox for Android, open gemini.google.com and sign in to your Google account.\n2. In Firefox open the menu (three dots) → Extensions → Explore more add-ons → Cookie-Editor → Add.\n3. Still on the gemini.google.com tab, open Cookie-Editor, tap Export, then Copy.\n4. Return here, tap Import copied cookies, then Connect.\n\nOn a computer, if you ever have one\n1. Open gemini.google.com, press F12 and open the Network tab.\n2. Reload the page and click the first gemini.google.com request.\n3. Right-click the cookie request header → Copy value, send that text to this phone and copy it.\n\nOther Android browsers that load extensions (Mises, Quetta, Edge Canary) work the same way. Nothing is uploaded and the cookies stay encrypted on this device.</string>
     <string name="login_blocked_detected">Google blocked sign-in inside the app — that is normal and not a bug. Copy your cookies from a browser, then tap Import.</string>
     <string name="connect_failed">That session could not be verified. Make sure the cookies are current and complete.</string>
-    <string name="connect_invalid">That does not look like a Gemini cookie header.</string>
+    <string name="connect_invalid">That does not look like a Gemini or claude.ai session.</string>
     <string name="connect_success">Connected</string>
 
     <!-- Dialogs -->
@@ -95,19 +95,17 @@
     <string name="import_help_button">How?</string>
     <string name="paste_clipboard_button">Paste from clipboard</string>
     <string name="paste_clipboard_empty">Nothing to paste — copy your cookies first.</string>
-    <string name="paste_probe_claude">Test Claude session</string>
-    <string name="paste_probe_detected">Claude sessionKey detected — test it here; nothing is saved yet.</string>
-    <string name="paste_probe_running">Testing against claude.ai…</string>
-    <string name="paste_probe_ok">Claude ok · %1$s</string>
-    <string name="paste_probe_failed">Claude test failed: %1$s</string>
     <string name="probe_window_five">5-hour</string>
     <string name="probe_window_weekly">Weekly</string>
     <string name="probe_window_weekly_opus">Weekly Opus</string>
     <string name="action_import_cookies">Import cookies (Gemini / Claude)…</string>
-    <string name="paste_probe_no_windows">no usage windows reported for this plan</string>
     <string name="paste_cookies_status_unrecognized">%1$d cookies found, but none is a Google session or a claude.ai sessionKey: %2$s</string>
-    <string name="paste_probe_claude_empty">Paste a claude.ai export to test it — no sessionKey in this text yet.</string>
     <string name="paste_cookies_status_wrong_site">This export is from %1$s. Open Cookie-Editor on the claude.ai tab (or the gemini.google.com one) and export again.</string>
     <string name="paste_report_button">Copy report</string>
     <string name="paste_report_copied">Report copied — no cookie values in it, safe to share.</string>
+    <string name="paste_connect_button">Connect Gemini</string>
+    <string name="paste_connect_claude">Connect Claude</string>
+    <string name="paste_status_claude">claude.ai sessionKey found. Connect links this account; your Gemini login stays as it is.</string>
+    <string name="claude_connect_success">Claude connected · %1$s</string>
+    <string name="paste_no_windows">no usage windows reported for this plan</string>
 </resources>

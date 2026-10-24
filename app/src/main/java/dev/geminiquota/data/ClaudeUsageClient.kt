@@ -26,7 +26,7 @@ class ClaudeUsageClient(
 ) {
 
     fun fetchUsage(sessionKey: String, organizationId: String? = null): QuotaPage {
-        val cookie = ClaudeCookies.normalize(sessionKey)
+        val cookie = ClaudeCookies.cookieHeader(sessionKey)
             ?: throw UsageException.AuthRequired("No claude.ai sessionKey cookie was supplied")
         val organization = organizationId?.takeIf { it.isNotBlank() }
             ?: discoverOrganization(cookie)

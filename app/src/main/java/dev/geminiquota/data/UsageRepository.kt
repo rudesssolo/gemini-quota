@@ -20,11 +20,16 @@ class UsageRepository(
     private val appContext: Context,
     private val store: SessionStore,
     private val client: GeminiUsageClient = GeminiUsageClient(),
+    private val claudeClient: ClaudeUsageClient = ClaudeUsageClient(),
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
 
     private val _state = MutableStateFlow(initialState())
     val state: StateFlow<UsageUiState> = _state.asStateFlow()
+
+    /** Last claude.ai page read, or null when no Claude session is stored. */
+    private val _claudePage = MutableStateFlow(store.page(ProviderId.CLAUDE))
+    val claudePage: StateFlow<QuotaPage?> = _claudePage.asStateFlow()
 
     private val refreshMutex = Mutex()
 
@@ -122,6 +127,39 @@ class UsageRepository(
         withContext(Dispatchers.IO) { store.clearAll() }
         RefreshScheduler.cancelAll(appContext)
         _state.value = UsageUiState(isSignedIn = false, snapshot = null)
+    }
+
+    /**
+     * Links a claude.ai session: one discovery call, one usage call, then the
+     * page is stored under the `claude` provider. The Gemini session and its
+     * widget state are never touched, so the two accounts coexist.
+     */
+    suspend fun connectClaude(rawCookies: String): ClaudeConnectResult {
+        val cookie = ClaudeCookies.cookieHeader(rawCookies)
+            ?: return ClaudeConnectResult.Failure(
+                ErrorKind.AUTH,
+                "The pasted text did not contain a claude.ai sessionKey.",
+            )
+
+        val page = try {
+            withContext(Dispatchers.IO) { claudeClient.fetchUsage(cookie) }
+        } catch (e: Exception) {
+            val kind = e.toErrorKind()
+            val message = e.message?.takeIf { it.isNotBlank() } ?: "Connection failed"
+            val detail = (e as? UsageException.ProtocolChanged)?.detail
+            withContext(Dispatchers.IO) {
+                store.saveError(kind, message, detail, ProviderId.CLAUDE)
+            }
+            return ClaudeConnectResult.Failure(kind, message)
+        }
+
+        withContext(Dispatchers.IO) {
+            store.saveCookie(cookie, ProviderId.CLAUDE)
+            store.savePage(page)
+            store.clearError(ProviderId.CLAUDE)
+        }
+        _claudePage.value = page
+        return ClaudeConnectResult.Success(page)
     }
 
     /**

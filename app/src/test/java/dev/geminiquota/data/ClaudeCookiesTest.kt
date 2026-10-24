@@ -101,6 +101,33 @@ class ClaudeCookiesTest {
     }
 
     @Test
+    fun `cookie header keeps every claude cookie`() {
+        val raw = "sessionKey=$token; __cf_bm=cf; lastActiveOrg=org-1"
+        assertEquals(raw, ClaudeCookies.cookieHeader(raw))
+    }
+
+    @Test
+    fun `cookie header drops cookies from other sites in a json export`() {
+        val raw = """[
+            {"domain":".claude.ai","name":"sessionKey","value":"$token"},
+            {"domain":".claude.ai","name":"__cf_bm","value":"cf"},
+            {"domain":".chatgpt.com","name":"oai-did","value":"nope"}
+        ]"""
+        assertEquals("sessionKey=$token; __cf_bm=cf", ClaudeCookies.cookieHeader(raw))
+    }
+
+    @Test
+    fun `cookie header falls back to the bare token`() {
+        assertEquals("sessionKey=$token", ClaudeCookies.cookieHeader(token))
+    }
+
+    @Test
+    fun `cookie header ignores attribute keys`() {
+        val raw = "sessionKey=$token; path=/; domain=.claude.ai; secure"
+        assertEquals("sessionKey=$token", ClaudeCookies.cookieHeader(raw))
+    }
+
+    @Test
     fun `reports which site a json export came from`() {
         val chatgpt = """[{"domain":".chatgpt.com","name":"oai-did","value":"x"}]"""
         val claude = """[{"domain":".claude.ai","name":"sessionKey","value":"$token"}]"""

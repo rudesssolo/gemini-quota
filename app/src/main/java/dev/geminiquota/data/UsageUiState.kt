@@ -57,3 +57,9 @@ sealed class ConnectResult {
     data object Success : ConnectResult()
     data class Failure(val kind: ErrorKind, val message: String) : ConnectResult()
 }
+
+/** Outcome of linking a claude.ai session; carries the page it managed to read. */
+sealed class ClaudeConnectResult {
+    data class Success(val page: QuotaPage) : ClaudeConnectResult()
+    data class Failure(val kind: ErrorKind, val message: String) : ClaudeConnectResult()
+}
