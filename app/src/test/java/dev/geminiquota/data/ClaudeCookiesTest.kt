@@ -81,6 +81,26 @@ class ClaudeCookiesTest {
     }
 
     @Test
+    fun `accepts a netscape cookies file`() {
+        val raw = listOf(
+            "# Netscape HTTP Cookie File",
+            ".claude.ai\tTRUE\t/\tTRUE\t1790000000\t__cf_bm\tcf-value",
+            "#HttpOnly_.claude.ai\tTRUE\t/\tTRUE\t1790000000\tsessionKey\t$token",
+        ).joinToString("\n")
+
+        assertEquals("sessionKey=$token", ClaudeCookies.normalize(raw))
+        assertTrue(ClaudeCookies.looksLikeClaudeSession(raw))
+        assertEquals("claude.ai", ClaudeCookies.exportDomain(raw))
+        assertEquals(listOf("__cf_bm", "sessionKey"), ClaudeCookies.cookieNames(raw))
+        assertTrue(ClaudeCookies.diagnostics(raw).contains("shape=netscape"))
+    }
+
+    @Test
+    fun `a tab in ordinary text is not mistaken for a netscape file`() {
+        assertNull(ClaudeCookies.normalize("some\ttext\twith\ttabs"))
+    }
+
+    @Test
     fun `reports which site a json export came from`() {
         val chatgpt = """[{"domain":".chatgpt.com","name":"oai-did","value":"x"}]"""
         val claude = """[{"domain":".claude.ai","name":"sessionKey","value":"$token"}]"""
@@ -106,7 +126,7 @@ class ClaudeCookiesTest {
         assertTrue(report.contains("site=claude.ai"))
         assertTrue(report.contains("names=sessionKey,__cf_bm"))
         assertTrue(report.contains("sessionKey=true"))
-        assertTrue(report.contains("json=true"))
+        assertTrue(report.contains("shape=json"))
         assertFalse(report.contains(token))
         assertFalse(report.contains("cf-secret"))
     }

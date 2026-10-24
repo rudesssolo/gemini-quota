@@ -32,6 +32,15 @@ object ClaudeCookies {
 
         jsonSessionKey(text)?.let { return it }
 
+        // Netscape / cookies.txt export: tab separated, name in column 7.
+        netscapeRows(text)?.let { rows ->
+            rows.firstOrNull { it[5].equals(COOKIE_NAME, ignoreCase = true) }
+                ?.get(6)
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+                ?.let { return it }
+        }
+
         SESSION_KEY.find(text)?.groupValues?.get(1)?.trimEnd('"', '\'')?.let { return it }
 
         // The bare value: cookie tables let people copy just the value cell.
@@ -42,6 +51,23 @@ object ClaudeCookies {
             if (candidate != null) return candidate
         }
         return null
+    }
+
+    /**
+     * Rows of a Netscape `cookies.txt` export:
+     * `#HttpOnly_.claude.ai\tTRUE\t/\tTRUE\t1790000000\tsessionKey\tsk-ant-…`
+     *
+     * Returns null unless every data line has the full seven columns, so ordinary
+     * text pastes are not mistaken for this format.
+     */
+    private fun netscapeRows(text: String): List<List<String>>? {
+        if (!text.contains('\t')) return null
+        val rows = text.lineSequence()
+            .map { it.trimEnd('\r') }
+            .filter { it.isNotBlank() && !it.startsWith("# ") }
+            .map { it.split('\t') }
+            .toList()
+        return rows.takeIf { lines -> lines.isNotEmpty() && lines.all { it.size >= 7 } }
     }
 
     private fun jsonSessionKey(text: String): String? =
@@ -65,6 +91,12 @@ object ClaudeCookies {
         jsonArray(text)?.let { array ->
             return (0 until array.length())
                 .mapNotNull { array.optJSONObject(it)?.field("name") }
+                .filter { it.isNotBlank() }
+                .distinct()
+                .take(MAX_DIAGNOSTIC_NAMES)
+        }
+        netscapeRows(text)?.let { rows ->
+            return rows.map { it[5].trim() }
                 .filter { it.isNotBlank() }
                 .distinct()
                 .take(MAX_DIAGNOSTIC_NAMES)
@@ -100,6 +132,11 @@ object ClaudeCookies {
      */
     fun exportDomain(raw: String?): String? {
         val text = raw?.trim().orEmpty()
+
+        netscapeRows(text)?.firstOrNull()?.let { row ->
+            return row[0].removePrefix("#HttpOnly_").trimStart('.').takeIf { it.isNotBlank() }
+        }
+
         val array = jsonArray(text) ?: return null
         return (0 until array.length())
             .mapNotNull { array.optJSONObject(it) }
@@ -124,7 +161,14 @@ object ClaudeCookies {
             append(" | site=").append(exportDomain(text) ?: "-")
             append(" | names=").append(names.joinToString(",").ifEmpty { "-" })
             append(" | sessionKey=").append(looksLikeClaudeSession(text))
-            append(" | json=").append(looksJson)
+            append(" | shape=").append(
+                when {
+                    looksJson -> "json"
+                    netscapeRows(text) != null -> "netscape"
+                    text.contains('	') -> "tabbed"
+                    else -> "text"
+                },
+            )
             append(" | google=").append(CookieUtils.summary(text).hasSession)
             append(" | chars=").append(text.length)
         }
