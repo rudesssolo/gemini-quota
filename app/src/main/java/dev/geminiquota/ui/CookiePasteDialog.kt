@@ -3,6 +3,7 @@ package dev.geminiquota.ui
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
@@ -42,6 +43,7 @@ object CookiePasteDialog {
         binding.clipboardButton.setOnClickListener { pasteClipboard(activity, binding) }
         binding.helpButton.setOnClickListener { showHelp(activity) }
         binding.probeButton.setOnClickListener { probeClaude(activity, binding) }
+        binding.reportButton.setOnClickListener { copyReport(activity, binding) }
         render(activity, binding)
 
         dialog.setOnShowListener {
@@ -82,6 +84,7 @@ object CookiePasteDialog {
 
         // The Claude entry point must be visible before pasting, otherwise the
         // dialog looks like it only understands Gemini.
+        binding.reportButton.isVisible = !raw.isNullOrBlank()
         binding.probeButton.isVisible = true
 
         if (ClaudeCookies.looksLikeClaudeSession(raw)) {
@@ -173,6 +176,16 @@ object CookiePasteDialog {
                 },
             )
         }
+    }
+
+    /** Copies a value-free description of the paste, for support requests. */
+    private fun copyReport(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {
+        val report = ClaudeCookies.diagnostics(binding.cookieInput.text?.toString())
+        val clipboard = activity.getSystemService<android.content.ClipboardManager>()
+        clipboard?.setPrimaryClip(
+            android.content.ClipData.newPlainText("gemini-quota diag", report),
+        )
+        Toast.makeText(activity, R.string.paste_report_copied, Toast.LENGTH_SHORT).show()
     }
 
     private fun pasteClipboard(activity: AppCompatActivity, binding: DialogCookiePasteBinding) {

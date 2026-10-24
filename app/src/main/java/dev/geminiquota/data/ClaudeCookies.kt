@@ -110,6 +110,26 @@ object ClaudeCookies {
             .firstOrNull()
     }
 
+    /**
+     * A one-line, value-free description of a paste, meant to be copied and sent
+     * by the user when a cookie is not recognised. Contains the site, the cookie
+     * names, whether the shapes matched, and the length — never a cookie value.
+     */
+    fun diagnostics(raw: String?): String {
+        val text = raw?.trim().orEmpty()
+        val names = cookieNames(text)
+        val looksJson = text.startsWith("[") || text.startsWith("{")
+        return buildString {
+            append("gemini-quota diag v1")
+            append(" | site=").append(exportDomain(text) ?: "-")
+            append(" | names=").append(names.joinToString(",").ifEmpty { "-" })
+            append(" | sessionKey=").append(looksLikeClaudeSession(text))
+            append(" | json=").append(looksJson)
+            append(" | google=").append(CookieUtils.summary(text).hasSession)
+            append(" | chars=").append(text.length)
+        }
+    }
+
     /** JSON exports use `name`/`value`; some tools capitalise them. */
     private fun JSONObject.field(key: String): String =
         optString(key).ifBlank { optString(key.replaceFirstChar { it.uppercase() }) }

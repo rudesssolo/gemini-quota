@@ -108,4 +108,6 @@
     <string name="paste_cookies_status_unrecognized">%1$d cookies found, but none is a Google session or a claude.ai sessionKey: %2$s</string>
     <string name="paste_probe_claude_empty">Paste a claude.ai export to test it — no sessionKey in this text yet.</string>
     <string name="paste_cookies_status_wrong_site">This export is from %1$s. Open Cookie-Editor on the claude.ai tab (or the gemini.google.com one) and export again.</string>
+    <string name="paste_report_button">Copy report</string>
+    <string name="paste_report_copied">Report copied — no cookie values in it, safe to share.</string>
 </resources>

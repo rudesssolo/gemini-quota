@@ -94,6 +94,34 @@ class ClaudeCookiesTest {
     }
 
     @Test
+    fun `diagnostics describe a paste without leaking values`() {
+        val raw = """
+            [{"domain":".claude.ai","name":"sessionKey","value":"$token"},
+             {"domain":".claude.ai","name":"__cf_bm","value":"cf-secret"}]
+        """.trimIndent()
+
+        val report = ClaudeCookies.diagnostics(raw)
+
+        assertTrue(report.startsWith("gemini-quota diag v1"))
+        assertTrue(report.contains("site=claude.ai"))
+        assertTrue(report.contains("names=sessionKey,__cf_bm"))
+        assertTrue(report.contains("sessionKey=true"))
+        assertTrue(report.contains("json=true"))
+        assertFalse(report.contains(token))
+        assertFalse(report.contains("cf-secret"))
+    }
+
+    @Test
+    fun `diagnostics point at the wrong site`() {
+        val report = ClaudeCookies.diagnostics(
+            """[{"domain":".chatgpt.com","name":"oai-did","value":"x"}]""",
+        )
+        assertTrue(report.contains("site=chatgpt.com"))
+        assertTrue(report.contains("sessionKey=false"))
+        assertTrue(report.contains("names=oai-did"))
+    }
+
+    @Test
     fun `a google cookie paste is not mistaken for a claude session`() {
         assertFalse(ClaudeCookies.looksLikeClaudeSession("SID=abc; __Secure-1PSID=xyz"))
         assertTrue(ClaudeCookies.looksLikeClaudeSession(token))
