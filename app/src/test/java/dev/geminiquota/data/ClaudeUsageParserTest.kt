@@ -1,6 +1,7 @@
 package dev.geminiquota.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -95,11 +96,26 @@ class ClaudeUsageParserTest {
     }
 
     @Test
-    fun `rejects a payload without windows`() {
+    fun `rejects a payload that shares no known field`() {
         val error = assertThrows(UsageException.ProtocolChanged::class.java) {
-            ClaudeUsageParser.parse("""{"extra_usage":null}""", now)
+            ClaudeUsageParser.parse("""{"quota":{"used":1}}""", now)
         }
         assertEquals("Claude usage response had no quota windows", error.message)
+    }
+
+    @Test
+    fun `a plan without quota windows is a valid answer`() {
+        val raw = """
+            {"five_hour":null,"seven_day":null,"seven_day_opus":null,
+             "seven_day_oauth_apps":null,"extra_usage":null}
+        """.trimIndent()
+
+        val page = ClaudeUsageParser.parse(raw, now)
+
+        assertTrue(page.windows.isEmpty())
+        assertFalse(page.hasAnyWindow)
+        assertEquals(0, page.worstPercent)
+        assertNull(page.nextResetAtEpochMs())
     }
 
     @Test

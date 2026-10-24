@@ -133,9 +133,16 @@ object CookiePasteDialog {
             binding.probeButton.isEnabled = true
             result.fold(
                 onSuccess = { page ->
+                    // A plan can answer with no quota windows at all; that is a
+                    // successful probe, not an empty result.
+                    val detail = if (page.windows.isEmpty()) {
+                        activity.getString(R.string.paste_probe_no_windows)
+                    } else {
+                        QuotaPageFormat.summary(activity, page)
+                    }
                     binding.cookieStatus.text = activity.getString(
                         R.string.paste_probe_ok,
-                        QuotaPageFormat.summary(activity, page),
+                        detail,
                     )
                     binding.cookieStatus.setTextColor(color(activity, R.color.severity_ok))
                 },

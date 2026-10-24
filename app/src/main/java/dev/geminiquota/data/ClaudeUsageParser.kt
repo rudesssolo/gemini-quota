@@ -25,6 +25,17 @@ object ClaudeUsageParser {
     private const val SEVEN_DAY = "seven_day"
     private const val SEVEN_DAY_OPUS = "seven_day_opus"
 
+    /** Every key the endpoint is known to emit, including the plan-specific ones. */
+    private val KNOWN_KEYS = listOf(
+        FIVE_HOUR,
+        SEVEN_DAY,
+        SEVEN_DAY_OPUS,
+        "seven_day_sonnet",
+        "seven_day_oauth_apps",
+        "seven_day_cowork",
+        "extra_usage",
+    )
+
     fun parse(body: String, nowEpochMs: Long): QuotaPage {
         val json = try {
             JSONObject(body)
@@ -40,7 +51,11 @@ object ClaudeUsageParser {
             window(json, SEVEN_DAY, QuotaWindowId.WEEKLY),
             window(json, SEVEN_DAY_OPUS, QuotaWindowId.WEEKLY_OPUS),
         )
-        if (windows.isEmpty()) {
+
+        // Free plans may legitimately report every window as null. That is a
+        // valid answer, not a schema change: only a payload that carries none of
+        // the keys we know about means the endpoint moved on.
+        if (windows.isEmpty() && KNOWN_KEYS.none { json.has(it) }) {
             throw UsageException.ProtocolChanged(
                 "Claude usage response had no quota windows",
                 responseSnippet(body),
